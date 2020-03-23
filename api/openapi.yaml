@@ -9,7 +9,7 @@ info:
   title: EDWIN Backend API
   version: 1.0.0-oas3
 servers:
-- url: https://127.0.0.1:3000/tempurl
+- url: https://127.0.0.1:3000/
 tags:
 - description: Operations relating to general front end calls and user information
   name: general
@@ -611,12 +611,17 @@ components:
         email:
           format: email
           type: string
+        password:
+          type: string
         groups:
           items:
             $ref: '#/components/schemas/group'
           type: array
       required:
-      - id firstName lastName email groups
+      - firstName 
+      - lastName
+      - email
+      - groups
       type: object
     group:
       example:
@@ -631,7 +636,7 @@ components:
         notification:
           type: boolean
       required:
-      - id name
+      - id
       type: object
     camera:
       example:
@@ -686,7 +691,11 @@ components:
             $ref: '#/components/schemas/stream'
           type: array
       required:
-      - name groupId coordinates ipAddress status
+      - name 
+      - groupId 
+      - coordinates 
+      - ipAddress 
+      - status
       type: object
     alert:
       example:
@@ -714,7 +723,10 @@ components:
         filePath:
           type: string
       required:
-      - cameraId alertType filePath status
+      - cameraId 
+      - alertType 
+      - filePath 
+      - status
       type: object
     stream:
       example:
@@ -729,7 +741,9 @@ components:
         streamType:
           $ref: '#/components/schemas/streamTypeEnum'
       required:
-      - id url streamType
+      - id 
+      - url 
+      - streamType
       type: object
     cameraStream:
       example:
@@ -775,7 +789,8 @@ components:
             type: string
           type: array
       required:
-      - camera camStreamUrl
+      - camera 
+      - camStreamUrl
       type: object
     alertTypeEnum:
       enum:
