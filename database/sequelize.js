@@ -4,6 +4,7 @@ var CameraModel = require('../models/CameraModel');
 var AlertModel = require('../models/AlertModel');
 var GroupModel = require('../models/GroupModel');
 var GroupNotifyModel = require('../models/GroupNotifyModel')
+var StreamModel = require('../models/StreamModel');
 
 // TODO make this what we use
 // let username = process.env.MARIADB_USER
@@ -26,6 +27,7 @@ const Camera = CameraModel(conn, Sequelize);
 const Alert = AlertModel(conn, Sequelize);
 const Group = GroupModel(conn, Sequelize);
 const GroupNotify = GroupNotifyModel(conn, Sequelize);
+const Stream = StreamModel(conn, Sequelize);
 
 try {
     conn.authenticate();
@@ -44,7 +46,8 @@ module.exports = {
     Camera,
     Alert,
     Group,
-    GroupNotify
+    GroupNotify,
+    Stream
 };
 
 

@@ -1,5 +1,5 @@
 module.exports = (sequelize, type) => {
-    return sequelize.define('alert', {
+    return sequelize.define('stream', {
       id: {
         type: type.INTEGER,
         primaryKey: true,
@@ -9,23 +9,16 @@ module.exports = (sequelize, type) => {
         type: type.INTEGER,
         allowNull: false,
       },
-      alert_status: {
+      url: {
         type: type.STRING,
         allowNull: true,
       },
-      alert_type: {
+      output_format: {
         type: type.STRING,
         allowNull: false,
-      },
-      message: {
-        type: type.STRING,
-        allowNull: true,
-      },
-      filepath: {
-        type: type.STRING,
-        allowNull: true,
       }
     }, {
-      freezeTableName: true
+      freezeTableName: true,
+      timestamps: false
     });
   };

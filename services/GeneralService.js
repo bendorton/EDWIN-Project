@@ -1,5 +1,23 @@
 /* eslint-disable no-unused-vars */
 const Service = require('./Service');
+var conn = require('../database/sequelize').conn;
+var Person = require('../database/sequelize').Person;
+var GroupNotify = require('../database/sequelize').GroupNotify;
+var Alert = require('../database/sequelize').Alert;
+var Stream = require('../database/sequelize').Stream
+var Camera = require('../database/sequelize').Camera
+
+const QueryTypes = require('sequelize');
+
+var isLoggedIn = function (personId) {
+  //TODO verify user is admin, return true or false
+  return true
+}
+
+var isSelf = function (personId) {
+  //TODO verify user is same as one logged in
+  return true
+}
 
 class GeneralService {
 
@@ -13,7 +31,17 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          Alert.findAll({
+            where: {
+              camera_id: cameraId
+            }
+          })
+            .then(alerts => {
+              resolve(Service.successResponse(alerts, 200))
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -30,11 +58,34 @@ class GeneralService {
    * alert Alert alert to be updated
    * no response value expected for this operation
    **/
-  static alertPUT({ alert }) {
+  static alertPUT({ newAlert }) {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isLoggedIn(userId)) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          Alert.findOne({
+            where: {
+              id: alert.id,
+            },
+          })
+            .then(alert => {
+              if (alert == null) {
+                resolve(Service.rejectResponse('alert not found', 400))
+              } else {
+                alert.alert_status = newAlert.status
+                alert.alert_type = newAlert.alertType
+                alert.message = newAlert.message
+                alert.save().then(() => {
+                  resolve(Service.successResponse(''));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -55,7 +106,49 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          const streams = await Stream.findAll({
+            where: {
+              camera_id: cameraId
+            }
+          })
+            .catch(err => {
+              resolve(Service.rejectResponse('error retrieving streams' + err, 500))
+            })
+
+          const alerts = await Alert.findAll({
+            where: {
+              camera_id: cameraId
+            }
+          })
+            .catch(err => {
+              resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
+            })
+          
+          Camera.findOne({
+            where: {
+              id: cameraId
+            }
+          })
+          .then(camera => {
+            if (camera != null) {
+              var cameraObj = {
+                id: camera.id,
+                name: camera.name,
+                groupId: camera.group_id,
+                coordinates: camera.coordinates,
+                ipAddress: camera.ip_address,
+                status: camera.status,
+                alerts: alerts,
+                streams: streams
+              }
+              resolve(Service.successResponse(JSON.stringify(cameraObj)))
+            } else {
+              resolve(Service.successResponse('Invalid ID: No camera found'))
+            }
+          })
+          .catch(err => {
+            resolve(Service.successResponse('problem communicating with db: ' + err))
+          });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -76,7 +169,51 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isLoggedIn(userId)) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          const cameras = await conn.query(
+            'SELECT c.id, c.name, c.ip_address, c.group_id, c.coordinates, c.status FROM camera c JOIN person_group pg ON c.group_id = pg.group_id WHERE pg.person_id = :personId',
+            {
+              replacements: { personId: userId },
+              type: QueryTypes.SELECT
+            })
+
+            const allCameras = []
+            for (const camera of cameras[0]) {
+              const streams = await Stream.findAll({
+                where: {
+                  camera_id: camera.id
+                }
+              })
+                .catch(err => {
+                  resolve(Service.rejectResponse('error retrieving streams' + err, 500))
+                })
+
+              const alerts = await Alert.findAll({
+                where: {
+                  camera_id: camera.id
+                }
+              })
+                .catch(err => {
+                  resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
+                })
+
+              let cameraObj = {
+                id: camera.id,
+                name: camera.name,
+                groupId: camera.group_id,
+                coordinates: camera.coordinates,
+                ipAddress: camera.ip_address,
+                status: camera.status,
+                alerts: await alerts,
+                streams: await streams
+              }
+              allCameras.push(cameraObj)
+            }
+
+          resolve(Service.successResponse(allCameras, 200))
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -97,6 +234,7 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
+          //TODO figure out how we want to do login
           resolve(Service.successResponse(''));
         } catch (e) {
           resolve(Service.rejectResponse(
@@ -118,7 +256,41 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isLoggedIn(userId) || !isSelf(userId)) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          const groups = await conn.query(
+            'SELECT g.id, g.name, pg.notifications FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
+            {
+              replacements: { personId: userId },
+              type: QueryTypes.SELECT
+            })
+
+          Person.findOne({
+            where: {
+              id: userId,
+            },
+          })
+            .then(user => {
+              if (user != null) {
+                var userObj = {
+                  id: user.id,
+                  email: user.email,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                  groups: [""]
+                }
+                userObj.groups = groups[0];
+
+                resolve(Service.successResponse(JSON.stringify(userObj)))
+              } else {
+                resolve(Service.rejectResponse('Invalid ID: No user found', 405))
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with db: ' + err))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -140,7 +312,40 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isLoggedIn(userId) || !isSelf(userId)) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          Person.findOne({
+            where: {
+              id: person.id,
+            },
+          })
+            .then(user => {
+              if (user == null) {
+                resolve(Service.rejectResponse('user not found', 400))
+              } else {
+                user.firstName = person.first_name
+                user.lastName = person.last_name
+                user.email = person.email
+                user.save().then(() => {
+                  let [groups] = person.groups
+                  groups.forEach((group) => {
+                    GroupNotify.create({
+                      person_id: user.id,
+                      group_id: group.id,
+                      notifications: group.notifications,
+                    })
+                      .catch(err => {
+                        resolve(Service.rejectResponse('error updating person group settings: ' + err));
+                      });
+                  })
+                  resolve(Service.successResponse(''));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',

@@ -10,7 +10,7 @@ const QueryTypes = require('sequelize');
 
 var isSiteAdmin = function (person) {
   //TODO verify user is admin, return true or false
-
+  return true;
 }
 
 class SiteAdminService {
@@ -25,6 +25,9 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
+          if(!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
           Person.destroy({
             where: {
               id: userId,
@@ -60,9 +63,12 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
+          if(!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
           let response = "["
           const people = await conn.query(
-            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, pg.notifications FROM person p JOIN `person_group` pg ON p.id = pg.person AND pg.group = :group_Id',
+            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, pg.notifications FROM person p JOIN `person_group` pg ON p.id = pg.person_id AND pg.group_id = :group_Id',
             {
               replacements: { group_Id: groupId },
               type: QueryTypes.SELECT
@@ -104,6 +110,9 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
+          if(!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
           if (person.password === '' || person.email === '') {
             resolve(Service.rejectResponse('email and password required', 401))
           }
@@ -129,8 +138,8 @@ class SiteAdminService {
                       let [groups] = person.groups
                       groups.forEach((group) => {
                         GroupNotify.create({
-                          person: user.id,
-                          group: group.id,
+                          person_id: user.id,
+                          group_id: group.id,
                           notifications: group.notifications,
                         })
                           .catch(err => {
@@ -165,6 +174,9 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
+          if(!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
           Person.findOne({
             where: {
               id: person.id,
@@ -177,12 +189,13 @@ class SiteAdminService {
                 user.firstName = person.first_name
                 user.lastName = person.last_name
                 user.email = person.email
+                user.password = person.password
                 user.save().then(() => {
                   let [groups] = person.groups
                   groups.forEach((group) => {
                     GroupNotify.create({
-                      person: user.id,
-                      group: group.id,
+                      person_id: user.id,
+                      group_id: group.id,
                       notifications: group.notifications,
                     })
                       .catch(err => {
@@ -216,8 +229,11 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
+          if(!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
           const groups = await conn.query(
-            'SELECT g.id, g.name, pg.notifications FROM groups g JOIN person_group pg ON g.id = pg.group AND pg.person = :personId',
+            'SELECT g.id, g.name, pg.notifications FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
             {
               replacements: { personId: userId },
               type: QueryTypes.SELECT
