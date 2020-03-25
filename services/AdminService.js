@@ -61,12 +61,17 @@ class AdminService {
    * camera Camera object to be added
    * no response value expected for this operation
    **/
-  static cameraPOST({ cameraObj }) {
+  static cameraPOST(cameraObj) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          cameraObj = cameraObj.body
+          if (cameraObj.id == undefined || cameraObj.id == null) {
+            cameraObj.id = 0
           }
 
           Camera.findOne({
@@ -79,15 +84,19 @@ class AdminService {
                 resolve(Service.rejectResponse('Camera with that ID already exists', 405))
               } else {
                 Camera.create({
+                  id: null,
                   name: cameraObj.name,
-                  group_id: cameraObj.group_id,
+                  group_id: cameraObj.groupId,
                   coordinates: cameraObj.coordinates,
-                  ip_address: cameraObj.ip_address,
+                  ip_address: cameraObj.ipAddress,
                   status: cameraObj.status,
                   camera_type: cameraObj.type
                 }).then(() => {
-                  resolve(Service.successResponse(''));
-                });
+                  resolve(Service.successResponse('Camera created'));
+                })
+                  .catch(err => {
+                    resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+                  })
               }
             })
             .catch(err => {
@@ -109,13 +118,19 @@ class AdminService {
    * camera Camera to be updated
    * no response value expected for this operation
    **/
-  static cameraPUT({ cameraObj }) {
+  static cameraPUT(cameraObj) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+
+          cameraObj = cameraObj.body
+          if (cameraObj.id == undefined || cameraObj.id == null) {
+            cameraObj.id = 0
+          }
+
           Camera.findOne({
             where: {
               id: cameraObj.id,
@@ -199,12 +214,17 @@ class AdminService {
    * group Group group object to be added
    * no response value expected for this operation
    **/
-  static groupPOST({ groupObj }) {
+  static groupPOST(groupObj) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          groupObj = groupObj.body
+          if (groupObj.id == undefined || groupObj.id == null) {
+            groupObj.id = 0
           }
 
           Group.findOne({
@@ -216,10 +236,10 @@ class AdminService {
               if (group != null) {
                 resolve(Service.rejectResponse('group with that ID already exists', 405))
               } else {
-                Camera.create({
+                Group.create({
                   name: groupObj.name
                 }).then(() => {
-                  resolve(Service.successResponse(''));
+                  resolve(Service.successResponse('Group Created'));
                 });
               }
             })
@@ -242,13 +262,19 @@ class AdminService {
    * group Group group to be updated
    * no response value expected for this operation
    **/
-  static groupPUT({ groupObj }) {
+  static groupPUT( groupObj ) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+
+          groupObj = groupObj.body
+          if (groupObj.id == undefined || groupObj.id == null) {
+            groupObj.id = 0
+          }
+
           Group.findOne({
             where: {
               id: groupObj.id,

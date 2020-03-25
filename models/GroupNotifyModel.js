@@ -1,14 +1,14 @@
 module.exports = (sequelize, type) => {
     return sequelize.define('person_group', {
-      person: {
+      person_id: {
         type: type.INTEGER,
         allowNull: false
       },
-      group: {
+      group_id: {
         type: type.INTEGER,
         allowNull: false
       },
-      notifications: {
+      notification: {
         type: type.INTEGER,
         allowNull: false
       }

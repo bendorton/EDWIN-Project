@@ -73,7 +73,7 @@ class SiteAdminService {
           }
           let response = "["
           const people = await conn.query(
-            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, pg.notifications FROM person p JOIN `person_group` pg ON p.id = pg.person_id AND pg.group_id = :group_Id',
+            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, pg.notification FROM person p JOIN `person_group` pg ON p.id = pg.person_id AND pg.group_id = :group_Id',
             {
               replacements: { group_Id: groupId },
               type: QueryTypes.SELECT
@@ -88,7 +88,7 @@ class SiteAdminService {
               email: person['email'],
               groups: {
                 id: groupId,
-                notification: person['notifications']
+                notification: person['notification']
               }
             }
             response += JSON.stringify(personObj) + ","
@@ -111,13 +111,19 @@ class SiteAdminService {
    * person Person Person object to be added
    * no response value expected for this operation
    **/
-  static userAdminPOST({ person }) {
+  static userAdminPOST(person) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+
+          person = person.body
+          if (person.id == undefined || person.id == null) {
+            person.id = 0
+          }
+
           if (person.password === '' || person.email === '') {
             resolve(Service.rejectResponse('email and password required', 401))
           }
@@ -131,29 +137,37 @@ class SiteAdminService {
               if (user != null) {
                 resolve(Service.rejectResponse('email already in use', 400))
               } else {
-                bcrypt
-                  .hash(person.password, BCRYPT_SALT_ROUNDS)
-                  .then(function (hashedPassword) {
-                    Person.create({
-                      first_name: person.firstName,
-                      last_name: person.lastName,
-                      email: person.email,
-                      password: hashedPassword,
-                    }).then(() => {
-                      let [groups] = person.groups
-                      groups.forEach((group) => {
-                        GroupNotify.create({
-                          person_id: person.id,
-                          group_id: group.id,
-                          notifications: group.notification,
-                        })
-                          .catch(err => {
-                            resolve(Service.rejectResponse('error creating person group settings: ' + err));
-                          });
+                // bcrypt
+                //   .hash(person.password, BCRYPT_SALT_ROUNDS)
+                //   .then(function (hashedPassword) {
+                Person.create({
+                  firstname: person.firstName,
+                  lastname: person.lastName,
+                  email: person.email,
+                  password: person.password, //TODO make it the hashed password
+                }).then(() => {
+                  person.groups.forEach((group) => {
+                    if (group.notification == "false" || group.notification == 0) {
+                      group.notification = 0
+                    }
+                    else {
+                      group.notification = 1
+                    }
+                    GroupNotify.create({
+                      person_id: person.id,
+                      group_id: group.id,
+                      notification: group.notification,
+                    })
+                      .catch(err => {
+                        resolve(Service.rejectResponse('error creating person group settings: ' + err));
                       })
-                      resolve(Service.successResponse(''));
-                    });
-                  });
+                  })
+                  resolve(Service.successResponse('Created Person'));
+                })
+                // })
+                // .catch(err => {
+                //   resolve(Service.rejectResponse('error creating person group settings: ' + err));
+                // })
               }
             })
             .catch(err => {
@@ -163,10 +177,10 @@ class SiteAdminService {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
             e.status || 405,
-          ));
+          ))
         }
       },
-    );
+    )
   }
 
   /**
@@ -175,13 +189,19 @@ class SiteAdminService {
    * person Person object to be updated
    * no response value expected for this operation
    **/
-  static userAdminPUT({ person }) {
+  static userAdminPUT(person) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+
+          person = person.body
+          if (person.id == undefined || person.id == null) {
+            person.id = 0
+          }
+
           Person.findOne({
             where: {
               id: person.id,
@@ -194,34 +214,58 @@ class SiteAdminService {
                 user.firstname = person.firstName
                 user.lastname = person.lastName
                 user.email = person.email
-                user.password = person.password
+                if (person.password !== undefined && person.password != null) {
+                  user.password = person.password
+                }
                 user.save().then(() => {
-                  let [groups] = person.groups
-                  groups.forEach((group) => {
-                    GroupNotify.create({
-                      person_id: user.id,
-                      group_id: group.id,
-                      notifications: group.notification,
+                  person.groups.forEach((group) => {
+                    GroupNotify.findOne({
+                      where: {
+                        person_id: user.id,
+                        group_id: group.id
+                      },
                     })
+                      .then(groupNotify => {
+                        if (groupNotify != null) {
+                          if(group.notification == "false" || group.notification == 0) {
+                            group.notification = 0
+                          }
+                          else {
+                            group.notification = 1
+                          }
+                          groupNotify.notification = group.notification
+                          groupNotify.save()
+                        }
+                        else {
+                          GroupNotify.create({
+                            person_id: person.id,
+                            group_id: group.id,
+                            notification: group.notification,
+                          })
+                            .catch(err => {
+                              resolve(Service.rejectResponse('error creating person group settings: ' + err));
+                            })
+                        }
+                      })
                       .catch(err => {
-                        resolve(Service.rejectResponse('error updating person group settings: ' + err));
-                      });
+                        resolve(Service.rejectResponse('error updating person group settings: ' + err))
+                      })
                   })
-                  resolve(Service.successResponse(''));
-                });
+                  resolve(Service.successResponse('Updated Person'))
+                })
               }
             })
             .catch(err => {
               resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
-            });
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
             e.status || 405,
-          ));
+          ))
         }
       },
-    );
+    )
   }
 
   /**
@@ -238,7 +282,7 @@ class SiteAdminService {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
           const groups = await conn.query(
-            'SELECT g.id, g.name, pg.notifications FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
+            'SELECT g.id, g.name, pg.notification FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
             {
               replacements: { personId: userId },
               type: QueryTypes.SELECT

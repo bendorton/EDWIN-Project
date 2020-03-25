@@ -58,12 +58,17 @@ class GeneralService {
    * alert Alert alert to be updated
    * no response value expected for this operation
    **/
-  static alertPUT({ alertObj }) {
+  static alertPUT( alertObj ) {
     return new Promise(
       async (resolve) => {
         try {
           if (!isLoggedIn(alertObj)) {
             resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          alertObj = alertObj.body
+          if (alertObj.id == undefined || alertObj.id == null) {
+            alertObj.id = 0
           }
 
           Alert.findOne({
@@ -79,11 +84,11 @@ class GeneralService {
                 alert.alert_type = alertObj.alertType
                 alert.message = alertObj.message
                 alert.save().then(() => {
-                  resolve(Service.successResponse(''));
+                  resolve(Service.successResponse('Alert Updated'));
                 })
-                .catch(err => {
-                  resolve(Service.rejectResponse(err))
-                })
+                  .catch(err => {
+                    resolve(Service.rejectResponse(err))
+                  })
               }
             })
             .catch(err => {
@@ -264,7 +269,7 @@ class GeneralService {
           }
 
           const groups = await conn.query(
-            'SELECT g.id, g.name, pg.notifications FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
+            'SELECT g.id, g.name, pg.notification FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = :personId',
             {
               replacements: { personId: userId },
               type: QueryTypes.SELECT
@@ -311,13 +316,19 @@ class GeneralService {
    * person Person Updated Person Object
    * no response value expected for this operation
    **/
-  static userUserIdPUT({ userId, person }) {
+  static userUserIdPUT(request) {
     return new Promise(
       async (resolve) => {
         try {
-          if (!isLoggedIn(userId) || !isSelf(userId)) {
+          if (!isLoggedIn(request.userId) || !isSelf(request.userId)) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+
+          let person = request.body
+          if (person.id == undefined || person.id == null) {
+            person.id = 0
+          }
+
           Person.findOne({
             where: {
               id: person.id,
@@ -330,10 +341,11 @@ class GeneralService {
                 user.firstname = person.firstName
                 user.lastname = person.lastName
                 user.email = person.email
-                user.password = person.password
+                if(person.password !== undefined && person.password != null) {
+                  user.password = person.password
+                }
                 user.save().then(() => {
-                  let [groups] = person.groups
-                  groups.forEach((group) => {
+                  person.groups.forEach((group) => {
                     GroupNotify.findOne({
                       where: {
                         person_id: user.id,
@@ -342,29 +354,35 @@ class GeneralService {
                     })
                       .then(groupNotify => {
                         if (groupNotify != null) {
-                          groupNotify.notifications = group.notification
+                          if(group.notification == "false" || group.notification == 0) {
+                            group.notification = 0
+                          }
+                          else {
+                            group.notification = 1
+                          }
+                          groupNotify.notification = group.notification
                           groupNotify.save()
                         }
                       })
                       .catch(err => {
-                        resolve(Service.rejectResponse('error updating person group settings: ' + err));
+                        resolve(Service.rejectResponse('error updating person group settings: ' + err))
                       })
                   })
-                  resolve(Service.successResponse(''));
-                });
+                  resolve(Service.successResponse('Updated Self'))
+                })
               }
             })
             .catch(err => {
               resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
-            });
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
             e.status || 405,
-          ));
+          ))
         }
       },
-    );
+    )
   }
 
 }
