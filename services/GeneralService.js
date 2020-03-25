@@ -9,12 +9,12 @@ var Camera = require('../database/sequelize').Camera
 
 const QueryTypes = require('sequelize');
 
-var isLoggedIn = function (personId) {
+function isLoggedIn(personId) {
   //TODO verify user is admin, return true or false
   return true
 }
 
-var isSelf = function (personId) {
+function isSelf(personId) {
   //TODO verify user is same as one logged in
   return true
 }
@@ -58,29 +58,32 @@ class GeneralService {
    * alert Alert alert to be updated
    * no response value expected for this operation
    **/
-  static alertPUT({ newAlert }) {
+  static alertPUT({ alertObj }) {
     return new Promise(
       async (resolve) => {
         try {
-          if (!isLoggedIn(userId)) {
+          if (!isLoggedIn(alertObj)) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
 
           Alert.findOne({
             where: {
-              id: alert.id,
+              id: alertObj.id,
             },
           })
             .then(alert => {
               if (alert == null) {
                 resolve(Service.rejectResponse('alert not found', 400))
               } else {
-                alert.alert_status = newAlert.status
-                alert.alert_type = newAlert.alertType
-                alert.message = newAlert.message
+                alert.alert_status = alertObj.status
+                alert.alert_type = alertObj.alertType
+                alert.message = alertObj.message
                 alert.save().then(() => {
                   resolve(Service.successResponse(''));
-                });
+                })
+                .catch(err => {
+                  resolve(Service.rejectResponse(err))
+                })
               }
             })
             .catch(err => {
@@ -123,32 +126,32 @@ class GeneralService {
             .catch(err => {
               resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
             })
-          
+
           Camera.findOne({
             where: {
               id: cameraId
             }
           })
-          .then(camera => {
-            if (camera != null) {
-              var cameraObj = {
-                id: camera.id,
-                name: camera.name,
-                groupId: camera.group_id,
-                coordinates: camera.coordinates,
-                ipAddress: camera.ip_address,
-                status: camera.status,
-                alerts: alerts,
-                streams: streams
+            .then(camera => {
+              if (camera != null) {
+                var cameraObj = {
+                  id: camera.id,
+                  name: camera.name,
+                  groupId: camera.group_id,
+                  coordinates: camera.coordinates,
+                  ipAddress: camera.ip_address,
+                  status: camera.status,
+                  alerts: alerts,
+                  streams: streams
+                }
+                resolve(Service.successResponse(JSON.stringify(cameraObj)))
+              } else {
+                resolve(Service.successResponse('Invalid ID: No camera found'))
               }
-              resolve(Service.successResponse(JSON.stringify(cameraObj)))
-            } else {
-              resolve(Service.successResponse('Invalid ID: No camera found'))
-            }
-          })
-          .catch(err => {
-            resolve(Service.successResponse('problem communicating with db: ' + err))
-          });
+            })
+            .catch(err => {
+              resolve(Service.successResponse('problem communicating with db: ' + err))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -180,38 +183,38 @@ class GeneralService {
               type: QueryTypes.SELECT
             })
 
-            const allCameras = []
-            for (const camera of cameras[0]) {
-              const streams = await Stream.findAll({
-                where: {
-                  camera_id: camera.id
-                }
-              })
-                .catch(err => {
-                  resolve(Service.rejectResponse('error retrieving streams' + err, 500))
-                })
-
-              const alerts = await Alert.findAll({
-                where: {
-                  camera_id: camera.id
-                }
-              })
-                .catch(err => {
-                  resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
-                })
-
-              let cameraObj = {
-                id: camera.id,
-                name: camera.name,
-                groupId: camera.group_id,
-                coordinates: camera.coordinates,
-                ipAddress: camera.ip_address,
-                status: camera.status,
-                alerts: await alerts,
-                streams: await streams
+          const allCameras = []
+          for (const camera of cameras[0]) {
+            const streams = await Stream.findAll({
+              where: {
+                camera_id: camera.id
               }
-              allCameras.push(cameraObj)
+            })
+              .catch(err => {
+                resolve(Service.rejectResponse('error retrieving streams' + err, 500))
+              })
+
+            const alerts = await Alert.findAll({
+              where: {
+                camera_id: camera.id
+              }
+            })
+              .catch(err => {
+                resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
+              })
+
+            let cameraObj = {
+              id: camera.id,
+              name: camera.name,
+              groupId: camera.group_id,
+              coordinates: camera.coordinates,
+              ipAddress: camera.ip_address,
+              status: camera.status,
+              alerts: await alerts,
+              streams: await streams
             }
+            allCameras.push(cameraObj)
+          }
 
           resolve(Service.successResponse(allCameras, 200))
         } catch (e) {
@@ -324,20 +327,28 @@ class GeneralService {
               if (user == null) {
                 resolve(Service.rejectResponse('user not found', 400))
               } else {
-                user.firstName = person.first_name
-                user.lastName = person.last_name
+                user.firstname = person.firstName
+                user.lastname = person.lastName
                 user.email = person.email
+                user.password = person.password
                 user.save().then(() => {
                   let [groups] = person.groups
                   groups.forEach((group) => {
-                    GroupNotify.create({
-                      person_id: user.id,
-                      group_id: group.id,
-                      notifications: group.notifications,
+                    GroupNotify.findOne({
+                      where: {
+                        person_id: user.id,
+                        group_id: group.id
+                      },
                     })
+                      .then(groupNotify => {
+                        if (groupNotify != null) {
+                          groupNotify.notifications = group.notification
+                          groupNotify.save()
+                        }
+                      })
                       .catch(err => {
                         resolve(Service.rejectResponse('error updating person group settings: ' + err));
-                      });
+                      })
                   })
                   resolve(Service.successResponse(''));
                 });

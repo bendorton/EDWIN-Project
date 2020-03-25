@@ -8,7 +8,7 @@ var bcrypt = require('bcrypt');
 const BCRYPT_SALT_ROUNDS = 12;
 const QueryTypes = require('sequelize');
 
-var isSiteAdmin = function (person) {
+function isSiteAdmin(person) {
   //TODO verify user is admin, return true or false
   return true;
 }
@@ -25,24 +25,29 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
-          if(!isSiteAdmin) {
+          if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
-          Person.destroy({
+
+          const person = await Person.findOne({
             where: {
               id: userId,
             },
           })
-            .then(user => {
-              if (user === 1) {
-                resolve(Service.successResponse(''));
-              } else {
-                resolve(Service.rejectResponse('Person not found'));
-              }
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
+
+          if (person == null) {
+            resolve(Service.rejectResponse('Person not found', 405));
+          }
+          person.destroy()
+            .then(() => {
+              resolve(Service.successResponse('Successfully deleted person'));
             })
             .catch(err => {
-              resolve(Service.rejectResponse('problem communicating with the db'));
-            });
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -63,7 +68,7 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
-          if(!isSiteAdmin) {
+          if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
           let response = "["
@@ -110,7 +115,7 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
-          if(!isSiteAdmin) {
+          if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
           if (person.password === '' || person.email === '') {
@@ -130,17 +135,17 @@ class SiteAdminService {
                   .hash(person.password, BCRYPT_SALT_ROUNDS)
                   .then(function (hashedPassword) {
                     Person.create({
-                      first_name: person.first_name,
-                      last_name: person.last_name,
+                      first_name: person.firstName,
+                      last_name: person.lastName,
                       email: person.email,
                       password: hashedPassword,
                     }).then(() => {
                       let [groups] = person.groups
                       groups.forEach((group) => {
                         GroupNotify.create({
-                          person_id: user.id,
+                          person_id: person.id,
                           group_id: group.id,
-                          notifications: group.notifications,
+                          notifications: group.notification,
                         })
                           .catch(err => {
                             resolve(Service.rejectResponse('error creating person group settings: ' + err));
@@ -174,7 +179,7 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
-          if(!isSiteAdmin) {
+          if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
           Person.findOne({
@@ -186,8 +191,8 @@ class SiteAdminService {
               if (user == null) {
                 resolve(Service.rejectResponse('user not found', 400))
               } else {
-                user.firstName = person.first_name
-                user.lastName = person.last_name
+                user.firstname = person.firstName
+                user.lastname = person.lastName
                 user.email = person.email
                 user.password = person.password
                 user.save().then(() => {
@@ -196,7 +201,7 @@ class SiteAdminService {
                     GroupNotify.create({
                       person_id: user.id,
                       group_id: group.id,
-                      notifications: group.notifications,
+                      notifications: group.notification,
                     })
                       .catch(err => {
                         resolve(Service.rejectResponse('error updating person group settings: ' + err));
@@ -229,7 +234,7 @@ class SiteAdminService {
     return new Promise(
       async (resolve) => {
         try {
-          if(!isSiteAdmin) {
+          if (!isSiteAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
           const groups = await conn.query(

@@ -7,7 +7,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: EDWIN Backend API
-  version: 1.0.0-oas3
+  version: "1.1.0-oas3"
 servers:
 - url: https://127.0.0.1:3000/
 tags:
@@ -224,17 +224,17 @@ paths:
       x-openapi-router-service: GeneralService
   /camera:
     delete:
-      description: deletes cameraStream object from database
+      description: deletes camera object from database
       operationId: cameraDELETE
       parameters:
       - description: Numeric ID of the camera to delete
         explode: false
-        in: path
+        in: query
         name: cameraId
         required: true
         schema:
           type: integer
-        style: simple
+        style: form
       responses:
         "200":
           description: Successfully deleted camera
@@ -252,7 +252,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/cameraStream'
+              $ref: '#/components/schemas/camera'
         description: Camera object to be added
         required: true
       responses:
@@ -272,7 +272,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/cameraStream'
+              $ref: '#/components/schemas/camera'
         description: camera to be updated
         required: true
       responses:
@@ -510,7 +510,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/cameraStream'
+                  $ref: '#/components/schemas/camera'
                 type: array
                 x-content-type: application/json
           description: Successfully returned camera stream list
@@ -529,12 +529,12 @@ paths:
       parameters:
       - description: Numeric ID of the group to delete
         explode: false
-        in: path
+        in: query
         name: groupId
         required: true
         schema:
           type: integer
-        style: simple
+        style: form
       responses:
         "200":
           description: Successfully deleted group
@@ -682,6 +682,8 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/cameraStatusEnum'
+        type:
+          type: string
         alerts:
           items:
             $ref: '#/components/schemas/alert'
@@ -744,53 +746,6 @@ components:
       - id 
       - url 
       - streamType
-      type: object
-    cameraStream:
-      example:
-        camStreamUrl:
-        - camStreamUrl
-        - camStreamUrl
-        camera:
-          alerts:
-          - timeStamp: 2000-01-23T04:56:07.000+00:00
-            alertType: High Temperature
-            cameraId: 5
-            filePath: filePath
-            id: 1
-            message: message
-            status: active
-          - timeStamp: 2000-01-23T04:56:07.000+00:00
-            alertType: High Temperature
-            cameraId: 5
-            filePath: filePath
-            id: 1
-            message: message
-            status: active
-          groupId: 6
-          streams:
-          - streamType: HD
-            id: 5
-            url: url
-          - streamType: HD
-            id: 5
-            url: url
-          name: name
-          coordinates: coordinates
-          ipAddress: ipAddress
-          id: 0
-          status: good
-      properties:
-        camera:
-          $ref: '#/components/schemas/camera'
-        camStreamUrl:
-          description: array of RTSP (or other) stream URLS that connect directly
-            to the camera
-          items:
-            type: string
-          type: array
-      required:
-      - camera 
-      - camStreamUrl
       type: object
     alertTypeEnum:
       enum:

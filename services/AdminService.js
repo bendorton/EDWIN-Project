@@ -1,5 +1,13 @@
 /* eslint-disable no-unused-vars */
 const Service = require('./Service');
+var Camera = require('../database/sequelize').Camera
+var Group = require('../database/sequelize').Group
+var Stream = require('../database/sequelize').Stream
+
+function isAdmin(person) {
+  //TODO verify user is admin, return true or false
+  return true;
+}
 
 class AdminService {
 
@@ -14,7 +22,29 @@ class AdminService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          const camera = await Camera.findOne({
+            where: {
+              id: cameraId,
+            },
+          })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
+
+          if (camera == null) {
+            resolve(Service.rejectResponse('Camera not found', 405));
+          }
+
+          camera.destroy()
+            .then(() => {
+              resolve(Service.successResponse('Successfully deleted camera'));
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -28,14 +58,41 @@ class AdminService {
   /**
    * admin - create camera
    *
-   * cameraStream CameraStream Camera object to be added
+   * camera Camera object to be added
    * no response value expected for this operation
    **/
-  static cameraPOST({ cameraStream }) {
+  static cameraPOST({ cameraObj }) {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          Camera.findOne({
+            where: {
+              id: cameraObj.id,
+            },
+          })
+            .then(camera => {
+              if (camera != null) {
+                resolve(Service.rejectResponse('Camera with that ID already exists', 405))
+              } else {
+                Camera.create({
+                  name: cameraObj.name,
+                  group_id: cameraObj.group_id,
+                  coordinates: cameraObj.coordinates,
+                  ip_address: cameraObj.ip_address,
+                  status: cameraObj.status,
+                  camera_type: cameraObj.type
+                }).then(() => {
+                  resolve(Service.successResponse(''));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -49,14 +106,39 @@ class AdminService {
   /**
    * admin - update camera
    *
-   * cameraStream CameraStream camera to be updated
+   * camera Camera to be updated
    * no response value expected for this operation
    **/
-  static cameraPUT({ cameraStream }) {
+  static cameraPUT({ cameraObj }) {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          Camera.findOne({
+            where: {
+              id: cameraObj.id,
+            },
+          })
+            .then(camera => {
+              if (camera == null) {
+                resolve(Service.rejectResponse('camera not found', 400))
+              } else {
+                camera.name = cameraObj.name
+                camera.group_id = cameraObj.groupId
+                camera.coordinates = cameraObj.coordinates
+                camera.ip_address = cameraObj.ipAddress
+                camera.status = cameraObj.status
+                camera.camera_type = cameraObj.type
+                camera.save().then(() => {
+                  resolve(Service.successResponse(camera));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -78,7 +160,29 @@ class AdminService {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          const group = await Group.findOne({
+            where: {
+              id: groupId,
+            },
+          })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with the db' + err));
+            })
+
+          if (group == null) {
+            resolve(Service.rejectResponse('Group not found', 405));
+          }
+
+          group.destroy()
+            .then(() => {
+              resolve(Service.successResponse('Successfully deleted group'))
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('Error deleting group. Are there still users or cameras attached to the group?'));
+            })
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -95,11 +199,33 @@ class AdminService {
    * group Group group object to be added
    * no response value expected for this operation
    **/
-  static groupPOST({ group }) {
+  static groupPOST({ groupObj }) {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+
+          Group.findOne({
+            where: {
+              id: groupObj.id,
+            },
+          })
+            .then(group => {
+              if (group != null) {
+                resolve(Service.rejectResponse('group with that ID already exists', 405))
+              } else {
+                Camera.create({
+                  name: groupObj.name
+                }).then(() => {
+                  resolve(Service.successResponse(''));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
@@ -116,11 +242,31 @@ class AdminService {
    * group Group group to be updated
    * no response value expected for this operation
    **/
-  static groupPUT({ group }) {
+  static groupPUT({ groupObj }) {
     return new Promise(
       async (resolve) => {
         try {
-          resolve(Service.successResponse(''));
+          if (!isAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          Group.findOne({
+            where: {
+              id: groupObj.id,
+            },
+          })
+            .then(group => {
+              if (group == null) {
+                resolve(Service.rejectResponse('group not found', 400))
+              } else {
+                group.name = groupObj.name
+                group.save().then(() => {
+                  resolve(Service.successResponse(group));
+                });
+              }
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('problem communicating with database: ' + err, 500))
+            });
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
