@@ -34,7 +34,6 @@
     "mocha": "^6.1.4",
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
-    "p-iteration": "^1.1.8",
     "sequelize": "^5.21.5",
     "swagger-express-middleware": "^2.0.2",
     "swagger-tools": "^0.10.4",

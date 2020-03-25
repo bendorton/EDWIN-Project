@@ -6,16 +6,10 @@ var GroupModel = require('../models/GroupModel');
 var GroupNotifyModel = require('../models/GroupNotifyModel')
 var StreamModel = require('../models/StreamModel');
 
-// TODO make this what we use
-// let username = process.env.MARIADB_USER
-// let password = process.env.MARIADB_PASSWORD
-// let dbName = process.env.MARIADB_DATABASE
-// let host = process.env.MARIADB_HOST
-
-let username = 'smokey'
-let password = 'bear'
-let dbName = 'edwin'
-let host = 'localhost'
+let username = process.env.MARIADB_USER
+let password = process.env.MARIADB_PASSWORD
+let dbName = process.env.MARIADB_DATABASE
+let host = process.env.MARIADB_HOST
 
 const conn = new Sequelize(dbName, username, password, {
     host: host,
@@ -49,17 +43,3 @@ module.exports = {
     GroupNotify,
     Stream
 };
-
-
-// JUST IN CASE I NEED THIS
-// const mariadb = require('mariadb');
-
-// const pool = mariadb.createPool({
-//   user: process.env.MARIADB_USER,
-//   password: process.env.MARIADB_PASSWORD,
-//   host: process.env.MARIADB_HOST,
-//   database: process.env.MARIADB_DATABASE,
-//   connectionLimit: 10
-// });
-
-// module.exports = pool;

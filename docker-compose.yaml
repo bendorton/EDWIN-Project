@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+
+  node:
+    build:
+        context: . #./backend
+        dockerfile: Dockerfile
+    container_name: edwin-backend-nodejs
+    network_mode: host
+    environment:
+      MARIADB_DATABASE: 'edwin'
+      MARIADB_USER: 'smokey'
+      MARIADB_PASSWORD: 'bear'
+      MARIADB_ROOT_PASSWORD: 'edwinproject'
+      MARIADB_HOST: 'localhost' #TODO db is not local
+    ports:
+      - 3030:3030
+
+    # vue:
+    # build:
+    #     context: ./frontend
+    #     dockerfile: Dockerfile
+    # container_name: edwin-frontend-vue
+    # ports:
+    #     - 3000:80
