@@ -242,7 +242,7 @@ class GeneralService {
     return new Promise(
       async (resolve) => {
         try {
-          //TODO figure out how we want to do login
+          //TODO login method
           resolve(Service.successResponse(''));
         } catch (e) {
           resolve(Service.rejectResponse(
