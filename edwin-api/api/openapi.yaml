@@ -750,8 +750,8 @@ components:
     alertTypeEnum:
       enum:
       - High Temperature
-      - Rapid raise in temperature
-      - Danger Will Robinson
+      - Rapid Rise in Temperature
+      - Danger
       type: string
     alertStatusEnum:
       enum:
