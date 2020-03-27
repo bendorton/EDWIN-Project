@@ -285,8 +285,8 @@ class GeneralService {
                 var userObj = {
                   id: user.id,
                   email: user.email,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
+                  firstName: user.firstname,
+                  lastName: user.lastname,
                   groups: [""]
                 }
                 userObj.groups = groups[0];
