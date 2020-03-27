@@ -9,7 +9,7 @@ info:
   title: EDWIN Backend API
   version: "1.1.0-oas3"
 servers:
-- url: https://127.0.0.1:3000/
+- url: https://127.0.0.1:3030/
 tags:
 - description: Operations relating to general front end calls and user information
   name: general
