@@ -5,7 +5,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: EDWIN Backend API
-  version: "1.1.0-oas3"
+  version: "1.1.1-oas3"
 servers:
 - url: https://127.0.0.1:3030/
 tags:
@@ -459,7 +459,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/camera'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  status:
+                    type: string
           description: Successfully returned camera object
         "400":
           description: bad input parameter
@@ -675,6 +682,8 @@ components:
         ipAddress:
           format: ipv4
           type: string
+        directURL:
+          type: string
         status:
           $ref: '#/components/schemas/cameraStatusEnum'
         type:
@@ -687,12 +696,6 @@ components:
           items:
             $ref: '#/components/schemas/stream'
           type: array
-      required:
-      - name 
-      - groupId 
-      - coordinates 
-      - ipAddress 
-      - status
       type: object
     alert:
       example:
@@ -721,9 +724,6 @@ components:
           type: string
       required:
       - cameraId 
-      - alertType 
-      - filePath 
-      - status
       type: object
     stream:
       example:
@@ -738,9 +738,7 @@ components:
         streamType:
           $ref: '#/components/schemas/streamTypeEnum'
       required:
-      - id 
       - url 
-      - streamType
       type: object
     alertTypeEnum:
       enum:
