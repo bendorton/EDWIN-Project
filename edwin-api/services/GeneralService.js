@@ -10,7 +10,7 @@ var Camera = require('../database/sequelize').Camera
 const QueryTypes = require('sequelize');
 
 function isLoggedIn(personId) {
-  //TODO verify user is admin, return true or false
+  //TODO verify user is logged in, return true or false
   return true
 }
 

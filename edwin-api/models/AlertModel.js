@@ -11,7 +11,7 @@ module.exports = (sequelize, type) => {
       },
       alert_status: {
         type: type.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       alert_type: {
         type: type.STRING,

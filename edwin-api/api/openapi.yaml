@@ -1,7 +1,5 @@
 openapi: 3.0.1
 info:
-  contact:
-    email: edwinproject@gmail.com
   description: API for the EDWIN Project
   license:
     name: Apache 2.0
@@ -343,33 +341,6 @@ paths:
       x-swagger-router-controller: General
       x-openapi-router-controller: GeneralController
       x-openapi-router-service: GeneralService
-  /camera/getbyip:
-    get:
-      operationId: cameraGetbyipGET
-      parameters:
-      - description: IP address of camera
-        explode: true
-        in: query
-        name: ipAddress
-        required: true
-        schema:
-          type: string
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/camera'
-          description: Successfully returned camera object
-        "400":
-          description: bad input parameter
-      summary: get camera by IP Address
-      tags:
-      - notification
-      x-swagger-router-controller: Notification
-      x-openapi-router-controller: NotificationController
-      x-openapi-router-service: NotificationService
   /alert:
     post:
       operationId: alertPOST
@@ -466,6 +437,33 @@ paths:
         "400":
           description: bad input parameter
       summary: get list of emails for camera alerts
+      tags:
+      - notification
+      x-swagger-router-controller: Notification
+      x-openapi-router-controller: NotificationController
+      x-openapi-router-service: NotificationService
+  /camera/get/ip:
+    get:
+      operationId: cameraGetbyipGET
+      parameters:
+      - description: IP address of camera
+        explode: true
+        in: query
+        name: ipAddress
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/camera'
+          description: Successfully returned camera object
+        "400":
+          description: bad input parameter
+      summary: get camera by IP Address
       tags:
       - notification
       x-swagger-router-controller: Notification
