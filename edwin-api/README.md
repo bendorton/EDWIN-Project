@@ -1,7 +1,7 @@
 # EDWIN Project API Server
 
 ## API Documentation
-[EDWIN_API 1.1.0-oas3](https://app.swaggerhub.com/apis-docs/bendorton/EDWIN_API/1.1.0-oas3)
+[EDWIN_API 1.1.1-oas3](https://app.swaggerhub.com/apis-docs/bendorton/EDWIN_API/1.1.1-oas3)
 \
 \
 \
