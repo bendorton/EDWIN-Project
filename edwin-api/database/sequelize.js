@@ -1,9 +1,10 @@
 var Sequelize = require('sequelize');
-var PersonModel = require('../models/PersonModel');
-var CameraModel = require('../models/CameraModel');
 var AlertModel = require('../models/AlertModel');
+var CameraModel = require('../models/CameraModel');
 var GroupModel = require('../models/GroupModel');
 var GroupNotifyModel = require('../models/GroupNotifyModel')
+var PersonModel = require('../models/PersonModel');
+var PersonRoleAssignModel = require('../models/PersonRoleAssign');
 var StreamModel = require('../models/StreamModel');
 
 let username = process.env.MARIADB_USER
@@ -22,6 +23,7 @@ const Alert = AlertModel(conn, Sequelize);
 const Group = GroupModel(conn, Sequelize);
 const GroupNotify = GroupNotifyModel(conn, Sequelize);
 const Stream = StreamModel(conn, Sequelize);
+const PersonRoleAssign = PersonRoleAssignModel(conn, Sequelize);
 
 try {
     conn.authenticate();
@@ -41,5 +43,6 @@ module.exports = {
     Alert,
     Group,
     GroupNotify,
-    Stream
+    Stream,
+    PersonRoleAssign
 };

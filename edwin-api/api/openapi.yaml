@@ -469,7 +469,7 @@ paths:
       x-swagger-router-controller: Notification
       x-openapi-router-controller: NotificationController
       x-openapi-router-service: NotificationService
-  /camerastream/{cameraId}:
+  /camerastream/get/{cameraId}:
     get:
       operationId: camerastreamCameraIdGET
       parameters:
@@ -616,10 +616,7 @@ components:
             $ref: '#/components/schemas/group'
           type: array
       required:
-      - firstName 
-      - lastName
       - email
-      - groups
       type: object
     group:
       example:

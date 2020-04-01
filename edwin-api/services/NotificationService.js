@@ -111,33 +111,10 @@ class NotificationService {
           })
 
           if (camera != null) {
-            const streams = await Stream.findAll({
-              where: {
-                camera_id: camera.id
-              }
-            })
-              .catch(err => {
-                resolve(Service.rejectResponse('error retrieving streams' + err, 500))
-              })
-
-            const alerts = await Alert.findAll({
-              where: {
-                camera_id: camera.id
-              }
-            })
-              .catch(err => {
-                resolve(Service.rejectResponse('error retrieving alerts' + err, 500))
-              })
-
             var cameraObj = {
               id: camera.id,
               name: camera.name,
-              groupId: camera.group_id,
-              coordinates: camera.coordinates,
-              ipAddress: camera.ip_address,
               status: camera.status,
-              alerts: alerts,
-              streams: streams
             }
             resolve(Service.successResponse(JSON.stringify(cameraObj)))
           } else {

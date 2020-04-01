@@ -3,6 +3,7 @@ const Service = require('./Service');
 var conn = require('../database/sequelize').conn;
 var Person = require('../database/sequelize').Person;
 var GroupNotify = require('../database/sequelize').GroupNotify;
+var PersonRoleAssign = require('../database/sequelize').PersonRoleAssign;
 var bcrypt = require('bcrypt');
 
 const BCRYPT_SALT_ROUNDS = 12;
@@ -145,7 +146,7 @@ class SiteAdminService {
                   lastname: person.lastName,
                   email: person.email,
                   password: person.password, //TODO make it the hashed password
-                }).then(() => {
+                }).then(personCreated => {
                   person.groups.forEach((group) => {
                     if (group.notification == "false" || group.notification == 0) {
                       group.notification = 0
@@ -154,7 +155,7 @@ class SiteAdminService {
                       group.notification = 1
                     }
                     GroupNotify.create({
-                      person_id: person.id,
+                      person_id: personCreated.id,
                       group_id: group.id,
                       notification: group.notification,
                     })
@@ -162,6 +163,18 @@ class SiteAdminService {
                         resolve(Service.rejectResponse('error creating person group settings: ' + err));
                       })
                   })
+
+                  if (person.isAdmin != undefined && person.isAdmin != null) {
+                    if (person.isAdmin == true || person.isAdmin == 1) {
+                      PersonRoleAssign.create({
+                        person_id: personCreated.id,
+                        role: 2
+                      })
+                        .catch(err => {
+                          resolve(Service.rejectResponse('error creating person role assignment: ' + err));
+                        })
+                    }
+                  }
                   resolve(Service.successResponse('Created Person'));
                 })
                 // })
@@ -227,7 +240,7 @@ class SiteAdminService {
                     })
                       .then(groupNotify => {
                         if (groupNotify != null) {
-                          if(group.notification == "false" || group.notification == 0) {
+                          if (group.notification == "false" || group.notification == 0) {
                             group.notification = 0
                           }
                           else {
@@ -238,7 +251,7 @@ class SiteAdminService {
                         }
                         else {
                           GroupNotify.create({
-                            person_id: person.id,
+                            person_id: user.id,
                             group_id: group.id,
                             notification: group.notification,
                           })
@@ -251,6 +264,33 @@ class SiteAdminService {
                         resolve(Service.rejectResponse('error updating person group settings: ' + err))
                       })
                   })
+
+                  if (person.isAdmin != undefined && person.isAdmin != null) {
+                    if (person.isAdmin == true || person.isAdmin == 1) {
+                      PersonRoleAssign.create({
+                        person_id: user.id,
+                        role: 2
+                      })
+                        .catch(err => {
+                          resolve(Service.rejectResponse('error updating person role assignment: ' + err));
+                        })
+                    } else {
+                      PersonRoleAssign.findOne({
+                        where: {
+                          person_id: user.id
+                        }
+                      })
+                      .then(personAssign => {
+                        personAssign.destroy()
+                        .catch(err => {
+                          resolve(Service.rejectResponse('error updating person role assignment: ' + err));
+                        })
+                      })
+                      .catch(err => {
+                        resolve(Service.rejectResponse('error updating person role assignment: ' + err));
+                      })
+                    }
+                  }
                   resolve(Service.successResponse('Updated Person'))
                 })
               }
@@ -298,8 +338,8 @@ class SiteAdminService {
                 var userObj = {
                   id: user.id,
                   email: user.email,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
+                  firstName: user.firstname,
+                  lastName: user.lastname,
                   groups: [""]
                 }
                 userObj.groups = groups[0];

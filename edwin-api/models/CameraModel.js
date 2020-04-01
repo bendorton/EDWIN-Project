@@ -13,6 +13,10 @@ module.exports = (sequelize, type) => {
         type: type.STRING,
         allowNull: false,
       },
+      direct_url: {
+        type: type.STRING,
+        allowNull: true,
+      },
       group_id: {
         type: type.INTEGER,
         allowNull: false,

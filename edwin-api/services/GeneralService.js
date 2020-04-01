@@ -144,7 +144,6 @@ class GeneralService {
                   name: camera.name,
                   groupId: camera.group_id,
                   coordinates: camera.coordinates,
-                  ipAddress: camera.ip_address,
                   status: camera.status,
                   alerts: alerts,
                   streams: streams
@@ -182,7 +181,7 @@ class GeneralService {
           }
 
           const cameras = await conn.query(
-            'SELECT c.id, c.name, c.ip_address, c.group_id, c.coordinates, c.status FROM camera c JOIN person_group pg ON c.group_id = pg.group_id WHERE pg.person_id = :personId',
+            'SELECT c.id, c.name, c.group_id, c.coordinates, c.status FROM camera c JOIN person_group pg ON c.group_id = pg.group_id WHERE pg.person_id = :personId',
             {
               replacements: { personId: userId },
               type: QueryTypes.SELECT
@@ -213,7 +212,6 @@ class GeneralService {
               name: camera.name,
               groupId: camera.group_id,
               coordinates: camera.coordinates,
-              ipAddress: camera.ip_address,
               status: camera.status,
               alerts: await alerts,
               streams: await streams

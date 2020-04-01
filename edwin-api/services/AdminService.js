@@ -89,6 +89,7 @@ class AdminService {
                   group_id: cameraObj.groupId,
                   coordinates: cameraObj.coordinates,
                   ip_address: cameraObj.ipAddress,
+                  direct_url: cameraObj.directURL,
                   status: cameraObj.status,
                   camera_type: cameraObj.type
                 }).then(() => {
@@ -144,10 +145,11 @@ class AdminService {
                 camera.group_id = cameraObj.groupId
                 camera.coordinates = cameraObj.coordinates
                 camera.ip_address = cameraObj.ipAddress
+                camera.direct_url = cameraObj.directURL
                 camera.status = cameraObj.status
                 camera.camera_type = cameraObj.type
                 camera.save().then(() => {
-                  resolve(Service.successResponse(camera));
+                  resolve(Service.successResponse('Camera updated'));
                 });
               }
             })
