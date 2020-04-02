@@ -16,8 +16,6 @@ tags:
   name: siteAdmin
 - description: Protected admin calls for creating, updating deleting. No front end
   name: admin
-- description: Operations relating to streams and the streaming server
-  name: server
 - description: Operations relating to alerts and the notification server
   name: notification
 paths:
@@ -476,57 +474,6 @@ paths:
       x-swagger-router-controller: Notification
       x-openapi-router-controller: NotificationController
       x-openapi-router-service: NotificationService
-  /camerastream/get/{cameraId}:
-    get:
-      operationId: camerastreamCameraIdGET
-      parameters:
-      - description: ID of camera
-        explode: false
-        in: path
-        name: cameraId
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  type: string
-                type: array
-                x-content-type: application/json
-          description: Successfully returned stream list
-        "400":
-          description: bad input parameter
-      summary: get direct camera stream URLs
-      tags:
-      - server
-      x-swagger-router-controller: Server
-      x-openapi-router-controller: ServerController
-      x-openapi-router-service: ServerService
-  /camerastream/list:
-    get:
-      operationId: camerastreamListGET
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/camera'
-                type: array
-                x-content-type: application/json
-          description: Successfully returned camera stream list
-        "401":
-          description: access denied
-      summary: get list of cameras and their direct stream URLs
-      tags:
-      - server
-      x-swagger-router-controller: Server
-      x-openapi-router-controller: ServerController
-      x-openapi-router-service: ServerService
   /group:
     delete:
       description: deletes group object from database

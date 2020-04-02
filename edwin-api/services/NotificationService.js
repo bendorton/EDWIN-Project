@@ -3,7 +3,9 @@ const Service = require('./Service');
 var Alert = require('../database/sequelize').Alert;
 var Camera = require('../database/sequelize').Camera;
 var Alert = require('../database/sequelize').Alert;
-var Stream = require('../database/sequelize').Stream
+var conn = require('../database/sequelize').conn;
+
+const QueryTypes = require('sequelize');
 
 function isAdmin(person) {
   //TODO verify user is admin, return true or false
@@ -25,8 +27,21 @@ class NotificationService {
           if (!isAdmin) {
             resolve(Service.rejectResponse('Unauthorized', 401))
           }
+          const response = await conn.query(
+            'SELECT p.email FROM person p JOIN person_group pg ON p.id = pg.person_id JOIN camera c ON c.group_id = pg.group_id WHERE c.id = :camId',
+            {
+              replacements: { camId: cameraId },
+              type: QueryTypes.SELECT
+            })
+            .catch(err => {
+              resolve(Service.rejectResponse('error communicating with database', 500))
+            })
 
-          resolve(Service.successResponse(''));
+            let emails = []
+            response[0].forEach(email => {
+              emails.push(email['email'])
+            })
+          resolve(Service.successResponse(emails));
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
