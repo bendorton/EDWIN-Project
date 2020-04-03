@@ -125,8 +125,12 @@ class SiteAdminService {
             person.id = 0
           }
 
-          if (person.password === '' || person.email === '') {
-            resolve(Service.rejectResponse('email and password required', 401))
+          if (person.password === '' || person.password == null || person.password == undefined) {
+            resolve(Service.rejectResponse('password required', 401))
+          }
+
+          if (person.email === '' || person.email == null || person.email == undefined) {
+            resolve(Service.rejectResponse('email required', 401))
           }
 
           Person.findOne({
@@ -145,7 +149,7 @@ class SiteAdminService {
                   firstname: person.firstName,
                   lastname: person.lastName,
                   email: person.email,
-                  password: person.password, //TODO make it the hashed password
+                  password: hashedPassword, //TODO make it the hashed password
                 }).then(personCreated => {
                   person.groups.forEach((group) => {
                     if (group.notification == "false" || group.notification == 0) {
