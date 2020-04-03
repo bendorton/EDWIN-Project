@@ -149,7 +149,7 @@ class SiteAdminService {
                   firstname: person.firstName,
                   lastname: person.lastName,
                   email: person.email,
-                  password: hashedPassword, //TODO make it the hashed password
+                  password: person.password, //TODO make it the hashed password
                 }).then(personCreated => {
                   person.groups.forEach((group) => {
                     if (group.notification == "false" || group.notification == 0) {
