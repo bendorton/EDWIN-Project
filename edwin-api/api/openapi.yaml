@@ -565,6 +565,9 @@ components:
           type: string
         password:
           type: string
+        isAdmin:
+            type: boolean
+            description: optional field, only affects admin calls
         groups:
           items:
             $ref: '#/components/schemas/group'

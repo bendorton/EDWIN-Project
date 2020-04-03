@@ -141,16 +141,33 @@ class AdminService {
               if (camera == null) {
                 resolve(Service.rejectResponse('camera not found', 400))
               } else {
-                camera.name = cameraObj.name
-                camera.group_id = cameraObj.groupId
-                camera.coordinates = cameraObj.coordinates
-                camera.ip_address = cameraObj.ipAddress
-                camera.direct_url = cameraObj.directURL
-                camera.status = cameraObj.status
-                camera.camera_type = cameraObj.type
+                if (cameraObj.name != undefined && cameraObj.name != null) {
+                  camera.name = cameraObj.name
+                }
+                if (cameraObj.groupId != undefined && cameraObj.groupId != null) {
+                  camera.group_id = cameraObj.groupId
+                }
+                if (cameraObj.coordinates != undefined && cameraObj.coordinates != null) {
+                  camera.coordinates = cameraObj.coordinates
+                }
+                if (cameraObj.ipAddress != undefined && cameraObj.ipAddress != null) {
+                  camera.ip_address = cameraObj.ipAddress
+                }
+                if (cameraObj.directURL != undefined && cameraObj.directURL != null) {
+                  camera.direct_url = cameraObj.directURL
+                }
+                if (cameraObj.status != undefined && cameraObj.status != null) {
+                  camera.status = cameraObj.status
+                }
+                if (cameraObj.type != undefined && cameraObj.type != null) {
+                  camera.camera_type = cameraObj.type
+                }
                 camera.save().then(() => {
                   resolve(Service.successResponse('Camera updated'));
-                });
+                })
+                .catch(err => {
+                  resolve(Service.rejectResponse('problem communicating with database: ' + err, 500)) 
+                })
               }
             })
             .catch(err => {
@@ -264,7 +281,7 @@ class AdminService {
    * group Group group to be updated
    * no response value expected for this operation
    **/
-  static groupPUT( groupObj ) {
+  static groupPUT(groupObj) {
     return new Promise(
       async (resolve) => {
         try {
