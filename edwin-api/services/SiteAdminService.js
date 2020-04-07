@@ -228,14 +228,26 @@ class SiteAdminService {
               if (user == null) {
                 resolve(Service.rejectResponse('user not found', 400))
               } else {
-                user.firstname = person.firstName
-                user.lastname = person.lastName
-                user.email = person.email
+                //update user info
+                if (person.firstName !== undefined && person.firstName != null) {
+                  user.firstname = person.firstName
+                }
+                if (person.lastName !== undefined && person.lastName != null) {
+                  user.lastname = person.lastName
+                }
+                if (person.email !== undefined && person.email != null) {
+                  user.email = person.email
+                }
                 if (person.password !== undefined && person.password != null) {
                   user.password = person.password
                 }
+
+                var groupIdArr = []
+
                 user.save().then(() => {
+                  //update or create group assignments
                   person.groups.forEach((group) => {
+                    groupIdArr.push(group.id)
                     GroupNotify.findOne({
                       where: {
                         person_id: user.id,
@@ -268,7 +280,19 @@ class SiteAdminService {
                         resolve(Service.rejectResponse('error updating person group settings: ' + err))
                       })
                   })
+ 
+                  // delete unused group assignments
+                  GroupNotify.destroy({
+                    where: {
+                      group_id: {[QueryTypes.notIn]: groupIdArr},
+                      person_id: user.id
+                    }
+                  })
+                  .catch(err =>{
+                    resolve(Service.rejectResponse('error updating person group assignment: ' + err));
+                  })
 
+                  // assign or unassign admin role
                   if (person.isAdmin != undefined && person.isAdmin != null) {
                     if (person.isAdmin == true || person.isAdmin == 1) {
                       PersonRoleAssign.create({
@@ -284,15 +308,15 @@ class SiteAdminService {
                           person_id: user.id
                         }
                       })
-                      .then(personAssign => {
-                        personAssign.destroy()
+                        .then(personAssign => {
+                          personAssign.destroy()
+                            .catch(err => {
+                              resolve(Service.rejectResponse('error updating person role assignment: ' + err));
+                            })
+                        })
                         .catch(err => {
                           resolve(Service.rejectResponse('error updating person role assignment: ' + err));
                         })
-                      })
-                      .catch(err => {
-                        resolve(Service.rejectResponse('error updating person role assignment: ' + err));
-                      })
                     }
                   }
                   resolve(Service.successResponse('Updated Person'))

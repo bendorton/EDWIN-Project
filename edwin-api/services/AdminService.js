@@ -83,6 +83,29 @@ class AdminService {
               if (camera != null) {
                 resolve(Service.rejectResponse('Camera with that ID already exists', 405))
               } else {
+
+                if (cameraObj.name == undefined || cameraObj.name == null) {
+                  return resolve(Service.rejectResponse('name required', 400))
+                }
+                if (cameraObj.groupId == undefined || cameraObj.groupId == null) {
+                  return resolve(Service.rejectResponse('groupId required', 400))
+                }
+                if (cameraObj.coordinates == undefined || cameraObj.coordinates == null) {
+                  return resolve(Service.rejectResponse('coordinates required', 400))
+                }
+                if (cameraObj.ipAddress == undefined || cameraObj.ipAddress == null) {
+                  return resolve(Service.rejectResponse('ipAddress required', 400))
+                }
+                if (cameraObj.directURL == undefined || cameraObj.directURL == null) {
+                  return resolve(Service.rejectResponse('directURL (url of rtsp stream from camera) required', 400))
+                }
+                if (cameraObj.status == undefined || cameraObj.status == null) {
+                  cameraObj.status = "good"
+                }
+                if (cameraObj.type == undefined || cameraObj.type == null) {
+                  cameraObj.type = ""
+                }
+
                 Camera.create({
                   id: null,
                   name: cameraObj.name,

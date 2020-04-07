@@ -80,9 +80,24 @@ class GeneralService {
               if (alert == null) {
                 resolve(Service.rejectResponse('alert not found', 400))
               } else {
-                alert.alert_status = alertObj.status
-                alert.alert_type = alertObj.alertType
-                alert.message = alertObj.message
+
+                if (alertObj.status !== undefined || alertObj.status != null) {
+                  alert.alert_status = alertObj.status
+                }
+                if (alertObj.alertType !== undefined || alertObj.alertType != null) {
+                  alert.alert_type = alertObj.alertType
+
+                }
+                if (alertObj.message !== undefined || alertObj.message != null) {
+                  alert.message = alertObj.message
+
+                }
+                if (alertObj.cameraId !== undefined || alertObj.cameraId != null) {
+                  if (alertObj.cameraId != alert.camera_id) {
+                    resolve(Service.rejectResponse('Cannot change camera id', 401))
+                  }
+                }
+
                 alert.save().then(() => {
                   resolve(Service.successResponse('Alert Updated'));
                 })
@@ -233,7 +248,7 @@ class GeneralService {
   /**
    * login
    *
-   * body Object not totally sure yet, probably encrypted username and password
+   * body
    * no response value expected for this operation
    **/
   static loginPOST({ body }) {
@@ -336,9 +351,15 @@ class GeneralService {
               if (user == null) {
                 resolve(Service.rejectResponse('user not found', 400))
               } else {
-                user.firstname = person.firstName
-                user.lastname = person.lastName
-                user.email = person.email
+                if(person.firstName !== undefined && person.firstName != null) {
+                  user.firstname = person.firstName
+                }
+                if(person.lastName !== undefined && person.lastName != null) {
+                  user.lastname = person.lastName
+                }
+                if(person.email !== undefined && person.email != null) {
+                  user.email = person.email
+                }
                 if(person.password !== undefined && person.password != null) {
                   user.password = person.password
                 }

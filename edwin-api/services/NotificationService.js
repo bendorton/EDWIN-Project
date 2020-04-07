@@ -81,6 +81,23 @@ class NotificationService {
               if (alert != null) {
                 resolve(Service.rejectResponse('alert already exists', 400))
               } else {
+
+                if(alertObj.cameraId == undefined || alertObj.cameraId == null) {
+                  return resolve(Service.rejectResponse('cameraId required', 400))
+                }
+                if(alertObj.status == undefined || alertObj.status == null) {
+                  return resolve(Service.rejectResponse('status required', 400))
+                }
+                if(alertObj.alertType == undefined || alertObj.alertType == null) {
+                  return resolve(Service.rejectResponse('alertType required', 400))
+                }
+                if(alertObj.filePath == undefined || alertObj.filePath == null) {
+                  return resolve(Service.rejectResponse('filePath required', 400))
+                }
+                if(alertObj.message == undefined || alertObj.message == null) {
+                  alertObj.message = ""
+                }
+
                 Alert.create({
                   id: null,
                   camera_id: alertObj.cameraId,
@@ -92,7 +109,7 @@ class NotificationService {
                   resolve(Service.successResponse('Created Alert'));
                 })
                   .catch(err => {
-                    resolve(Service.rejectResponse('error creating alert: make sure filepath is unique?: ' + err, 500))
+                    resolve(Service.rejectResponse('error creating alert: (make sure filepath is unique?): ' + err, 500))
                   })
               }
             })
