@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
-import Projects from '../views/Projects.vue'
+import Profile from '../views/Profile.vue'
 import Team from '../views/Team.vue'
 import Login from '../views/Login.vue'
 
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/profile',
     name: 'profile',
-    component: Projects
+    component: Profile
   },
   {
     path: '/team',

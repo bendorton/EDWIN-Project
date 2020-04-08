@@ -8,11 +8,16 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@videojs/http-streaming": "^1.13.2",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5",
+    "vue-video-player": "^5.0.2",
+    "vue-videojs7": "^0.1.5",
+    "vue-vjs-hls": "github:ice48623/vue-video-player",
+    "vuelidate": "^0.7.5",
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
