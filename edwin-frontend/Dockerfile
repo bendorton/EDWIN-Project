@@ -1,7 +1,6 @@
-FROM node-13.10
+FROM node-13.10 as build
 
 WORKDIR /app
-COPY package.json /app/package.json
+COPY package*.json ./
 RUN npm install
-COPY . /app
-RUN npm run build
+COPY . .

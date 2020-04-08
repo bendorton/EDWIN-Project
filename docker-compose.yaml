@@ -17,10 +17,11 @@ services:
     expose:
       - '3030'
 
-    # vue:
-    # build:
-    #     context: ./frontend
-    #     dockerfile: Dockerfile
-    # container_name: edwin-frontend-vue
-    # ports:
-    #     - 3000:80
+  vue:
+    build: ./edwin-frontend
+    command: npm run build
+    container_name: edwin-frontend-vue
+    environment: 
+      - BASE_URL=${base_url}
+    ports:
+        - 3000:80
