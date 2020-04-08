@@ -19,6 +19,7 @@ services:
 
   vue:
     build: ./edwin-frontend
+    image: node:latest
     command: npm run build
     container_name: edwin-frontend-vue
     environment: 
