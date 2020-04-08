@@ -4,9 +4,7 @@ var conn = require('../database/sequelize').conn;
 var Person = require('../database/sequelize').Person;
 var GroupNotify = require('../database/sequelize').GroupNotify;
 var PersonRoleAssign = require('../database/sequelize').PersonRoleAssign;
-var bcrypt = require('bcrypt');
 
-const BCRYPT_SALT_ROUNDS = 12;
 const QueryTypes = require('sequelize');
 
 function isSiteAdmin(person) {
@@ -281,17 +279,18 @@ class SiteAdminService {
                         resolve(Service.rejectResponse('error updating person group settings: ' + err))
                       })
                   })
- 
+
                   // delete unused group assignments
-                  GroupNotify.destroy({
-                    where: {
-                      group_id: {[QueryTypes.notIn]: groupIdArr},
-                      person_id: user.id
+                  //sequelize destroy method bug required raw query here
+                  conn.query('DELETE FROM person_group WHERE person_id = :personId AND group_id NOT IN (:groupIdArr)',
+                    {
+                      replacements: {
+                        personId: user.id,
+                        groupIdArr: groupIdArr.toString()
+                      },
+                      type: QueryTypes.DELETE
                     }
-                  })
-                  .catch(err =>{
-                    resolve(Service.rejectResponse('error updating person group assignment: ' + err));
-                  })
+                  )
 
                   // assign or unassign admin role
                   if (person.isAdmin != undefined && person.isAdmin != null) {
