@@ -74,7 +74,7 @@ class SiteAdminService {
           }
           let response = "["
           const people = await conn.query(
-            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, pg.notification FROM person p JOIN `person_group` pg ON p.id = pg.person_id AND pg.group_id = :group_Id',
+            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, g.name, pg.notification FROM person p JOIN `person_group` pg ON p.id = pg.person_id JOIN `groups` g ON pg.group_id = g.id WHERE g.id = :group_Id',
             {
               replacements: { group_Id: groupId },
               type: QueryTypes.SELECT
@@ -89,6 +89,7 @@ class SiteAdminService {
               email: person['email'],
               groups: {
                 id: groupId,
+                name: person['name'],
                 notification: person['notification']
               }
             }
