@@ -5,7 +5,7 @@ services:
   node:
     build: ./edwin-api
     image: node:latest
-    command: npm start
+    command: node index.js
     container_name: edwin-backend-nodejs
     environment:
       - MARIADB_DATABASE=${maria_db}
