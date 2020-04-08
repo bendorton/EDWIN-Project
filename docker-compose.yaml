@@ -25,4 +25,4 @@ services:
     environment: 
       - BASE_URL=${base_url}
     ports:
-        - 3000:80
+        - 8080:80
