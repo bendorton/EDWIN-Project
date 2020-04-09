@@ -110,7 +110,7 @@ export default {
   },
   methods: {
     getLoggedInUser: function(){
-      return HTTP.get(`user/20`).then(response => {
+      return HTTP.get(`user/1`).then(response => {
         this.loggedInUser = response.data
         let selectedFromStart = []
         if(this.loggedInUser.groups.length > 0){
