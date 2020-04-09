@@ -10,7 +10,7 @@ module.exports = (sequelize, type) => {
       },
       notification: {
         type: type.INTEGER,
-        allowNull: false
+        allowNull: true
       }
     }, {
       freezeTableName: true

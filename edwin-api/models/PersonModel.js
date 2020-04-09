@@ -21,6 +21,10 @@ module.exports = (sequelize, type) => {
         type: type.STRING,
         allowNull: false,
       },
+      role_id: {
+        type: type.INTEGER,
+        allowNull: true,
+      }
     }, {
       freezeTableName: true
     });

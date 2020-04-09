@@ -3,9 +3,12 @@ const Service = require('./Service');
 var conn = require('../database/sequelize').conn;
 var Person = require('../database/sequelize').Person;
 var GroupNotify = require('../database/sequelize').GroupNotify;
-var PersonRoleAssign = require('../database/sequelize').PersonRoleAssign;
 
 const QueryTypes = require('sequelize');
+
+const ADMIN_ROLE = 1;
+const GROUP_ADMIN_ROLE = 2;
+const VIEWER_ROLE = 3;
 
 function isSiteAdmin(person) {
   //TODO verify user is admin, return true or false
@@ -72,12 +75,15 @@ class SiteAdminService {
           }
           let response = "["
           const people = await conn.query(
-            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, g.name, pg.notification FROM person p JOIN `person_group` pg ON p.id = pg.person_id JOIN `groups` g ON pg.group_id = g.id WHERE g.id = :group_Id',
+            'SELECT DISTINCT p.id, p.firstname, p.lastname, p.email, g.name, pg.notification FROM person p JOIN `person_group` pg ON p.id = pg.person_id JOIN `groups` g ON pg.group_id = g.id WHERE g.id = :group_Id AND p.role_id NOT IN (1,2)',
             {
               replacements: { group_Id: groupId },
               type: QueryTypes.SELECT
             }
           )
+          .catch(err => {
+            resolve(Service.rejectResponse('ERROR: error connecting to database'))
+          })
 
           people[0].forEach((person) => {
             let personObj = {
@@ -141,14 +147,18 @@ class SiteAdminService {
               if (user != null) {
                 resolve(Service.rejectResponse('email already in use', 400))
               } else {
-                // bcrypt
-                //   .hash(person.password, BCRYPT_SALT_ROUNDS)
-                //   .then(function (hashedPassword) {
+                var roleId = VIEWER_ROLE
+                if (person.isAdmin != undefined && person.isAdmin != null) {
+                  if (person.isAdmin == true || person.isAdmin == 1) {
+                    roleId = GROUP_ADMIN_ROLE
+                  }
+                }
                 Person.create({
                   firstname: person.firstName,
                   lastname: person.lastName,
                   email: person.email,
                   password: person.password, //TODO make it the hashed password
+                  role_id: roleId
                 }).then(personCreated => {
                   person.groups.forEach((group) => {
                     if (group.notification == "false" || group.notification == 0) {
@@ -166,18 +176,6 @@ class SiteAdminService {
                         resolve(Service.rejectResponse('error creating person group settings: ' + err));
                       })
                   })
-
-                  if (person.isAdmin != undefined && person.isAdmin != null) {
-                    if (person.isAdmin == true || person.isAdmin == 1) {
-                      PersonRoleAssign.create({
-                        person_id: personCreated.id,
-                        role: 2
-                      })
-                        .catch(err => {
-                          resolve(Service.rejectResponse('error creating person role assignment: ' + err));
-                        })
-                    }
-                  }
                   resolve(Service.successResponse('Created Person'));
                 })
                 // })
@@ -240,6 +238,14 @@ class SiteAdminService {
                 if (person.password !== undefined && person.password != null) {
                   user.password = person.password
                 }
+                if (person.isAdmin != undefined && person.isAdmin != null) {
+                  if (person.isAdmin == true || person.isAdmin == 1) {
+                    user.role_id = GROUP_ADMIN_ROLE
+                  }
+                  else {
+                    user.role_id = VIEWER_ROLE
+                  }
+                }
 
                 var groupIdArr = []
 
@@ -282,43 +288,16 @@ class SiteAdminService {
 
                   // delete unused group assignments
                   //sequelize destroy method bug required raw query here
-                  conn.query('DELETE FROM person_group WHERE person_id = :personId AND group_id NOT IN (:groupIdArr)',
+                  conn.query('DELETE pg FROM person_group pg JOIN person p ON p.id = pg.person_id WHERE person_id = :personId AND group_id NOT IN (:groupIdArr) AND p.role_id != :adminRole',
                     {
                       replacements: {
                         personId: user.id,
-                        groupIdArr: groupIdArr.toString()
+                        groupIdArr: groupIdArr.toString(),
+                        adminRole: ADMIN_ROLE
                       },
                       type: QueryTypes.DELETE
                     }
                   )
-
-                  // assign or unassign admin role
-                  if (person.isAdmin != undefined && person.isAdmin != null) {
-                    if (person.isAdmin == true || person.isAdmin == 1) {
-                      PersonRoleAssign.create({
-                        person_id: user.id,
-                        role: 2
-                      })
-                        .catch(err => {
-                          resolve(Service.rejectResponse('error updating person role assignment: ' + err));
-                        })
-                    } else {
-                      PersonRoleAssign.findOne({
-                        where: {
-                          person_id: user.id
-                        }
-                      })
-                        .then(personAssign => {
-                          personAssign.destroy()
-                            .catch(err => {
-                              resolve(Service.rejectResponse('error updating person role assignment: ' + err));
-                            })
-                        })
-                        .catch(err => {
-                          resolve(Service.rejectResponse('error updating person role assignment: ' + err));
-                        })
-                    }
-                  }
                   resolve(Service.successResponse('Updated Person'))
                 })
               }

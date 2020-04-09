@@ -2,7 +2,7 @@
 const Service = require('./Service');
 var Camera = require('../database/sequelize').Camera
 var Group = require('../database/sequelize').Group
-var Stream = require('../database/sequelize').Stream
+var GroupNotify = require('../database/sequelize').GroupNotify;
 
 function isAdmin(person) {
   //TODO verify user is admin, return true or false
@@ -280,7 +280,12 @@ class AdminService {
               } else {
                 Group.create({
                   name: groupObj.name
-                }).then(() => {
+                }).then((newGroup) => {
+                  GroupNotify.create({
+                    person_id: 1,
+                    group_id: newGroup.id,
+                    notification: true
+                  })
                   resolve(Service.successResponse('Group Created'));
                 });
               }
