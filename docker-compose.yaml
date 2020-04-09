@@ -2,11 +2,10 @@ version: '3.3'
 
 services:
 
-  node:
+  edwin-nodejs:
     build: ./edwin-api
     image: node:latest
-    command: node index.js
-    container_name: edwin-backend-nodejs
+    command: npm start
     environment:
       - MARIADB_DATABASE=${maria_db}
       - MARIADB_USER=${maria_user}
@@ -17,12 +16,11 @@ services:
     expose:
       - '3030'
 
-  vue:
+  edwin-vue:
     build: ./edwin-frontend
-    image: node:latest
-    command: npm run build
-    container_name: edwin-frontend-vue
-    environment: 
-      - BASE_URL=${base_url}
     ports:
-        - 8080:80
+      - '8080:8080'
+    expose:
+      - '8080'
+    links:
+      - edwin-nodejs
