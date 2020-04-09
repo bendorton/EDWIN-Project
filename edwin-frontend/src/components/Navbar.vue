@@ -11,10 +11,10 @@
                 <span>Marketing Site</span>
                 <v-icon right>link</v-icon>
             </v-btn>
-            <v-btn href="/" text color="white">
+            <!-- <v-btn href="/" text color="white">
                 <span>Sign Out</span>
                 <v-icon right>exit_to_app</v-icon>
-            </v-btn>
+            </v-btn> -->
         </v-app-bar>
         <v-navigation-drawer app temporary v-model="drawer" class="teal lighten-1">
             <v-list class="teal lighten-1">
@@ -37,10 +37,10 @@ export default {
         return {
             drawer: false,
             links: [
-                { icon: 'videocam', text: 'Dashboard', route: '/dashboard' },
+                { icon: 'videocam', text: 'Dashboard', route: '/' },
                 { icon: 'account_circle', text: 'My Profile', route: '/profile' },
                 { icon: 'supervisor_account', text: 'Group', route: '/team' },
-                { icon: 'input', text: 'Login', route: '/' },
+                // { icon: 'input', text: 'Login', route: '/' },
             ]
         }
     }
