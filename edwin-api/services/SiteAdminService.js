@@ -131,7 +131,8 @@ class SiteAdminService {
           }
 
           if (person.password === '' || person.password == null || person.password == undefined) {
-            resolve(Service.rejectResponse('password required', 401))
+            // resolve(Service.rejectResponse('password required', 401))
+            person.password = '' //TODO remove this for login
           }
 
           if (person.email === '' || person.email == null || person.email == undefined) {
