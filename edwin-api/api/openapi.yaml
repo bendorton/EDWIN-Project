@@ -19,29 +19,6 @@ tags:
 - description: Operations relating to alerts and the notification server
   name: notification
 paths:
-  /login:
-    post:
-      operationId: loginPOST
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-        description: not totally sure yet, probably encrypted username and password
-        required: true
-      responses:
-        "200":
-          description: Successfully logged in
-        "401":
-          description: Invalid login
-        "405":
-          description: Invalid input
-      summary: login
-      tags:
-      - general
-      x-swagger-router-controller: General
-      x-openapi-router-controller: GeneralController
-      x-openapi-router-service: GeneralService
   /user/admin:
     delete:
       operationId: userAdminDELETE

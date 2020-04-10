@@ -15,7 +15,7 @@ function isLoggedIn(personId) {
 }
 
 function isSelf(personId) {
-  //TODO verify user is same as one logged in
+  //TODO verify user id is same as logged in user
   return true
 }
 
@@ -196,7 +196,7 @@ class GeneralService {
           }
 
           const cameras = await conn.query(
-            'SELECT c.id, c.name, c.group_id, c.coordinates, c.status FROM camera c JOIN person_group pg ON c.group_id = pg.group_id WHERE pg.person_id = :personId',
+            'SELECT c.id, c.name, c.group_id, g.name as group_name, c.coordinates, c.status FROM camera c JOIN person_group pg ON c.group_id = pg.group_id JOIN groups g ON c.group_id = g.id WHERE pg.person_id = :personId',
             {
               replacements: { personId: userId },
               type: QueryTypes.SELECT
@@ -226,6 +226,7 @@ class GeneralService {
               id: camera.id,
               name: camera.name,
               groupId: camera.group_id,
+              groupName: camera.group_name,
               coordinates: camera.coordinates,
               status: camera.status,
               alerts: await alerts,
@@ -235,28 +236,6 @@ class GeneralService {
           }
 
           resolve(Service.successResponse(allCameras, 200))
-        } catch (e) {
-          resolve(Service.rejectResponse(
-            e.message || 'Invalid input',
-            e.status || 405,
-          ));
-        }
-      },
-    );
-  }
-
-  /**
-   * login
-   *
-   * body
-   * no response value expected for this operation
-   **/
-  static loginPOST({ body }) {
-    return new Promise(
-      async (resolve) => {
-        try {
-          //TODO login method
-          resolve(Service.successResponse(''));
         } catch (e) {
           resolve(Service.rejectResponse(
             e.message || 'Invalid input',
