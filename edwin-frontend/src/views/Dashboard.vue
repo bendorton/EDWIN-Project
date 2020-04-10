@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <h1 large class="display-3 text-center pa-8" center>Woodland Hills</h1>
+    <h1 class="display-3 text-center pa-8">Available Live Streams</h1>
     <v-layout align-center justify-center row fill-height>
       <v-expansion-panels accordion hover style="maxWidth: 800px;">
         <v-expansion-panel v-for="camera in finalCameras" :key="camera.id">
@@ -12,6 +12,7 @@
               <v-icon v-else color="#2196F3">info</v-icon>
             </template>
             {{camera.name}}
+            <v-col cols="6"><em>{{camera.groupName}}</em></v-col>
           </v-expansion-panel-header>
           <v-expansion-panel-content class="grey--text">
             <v-card
