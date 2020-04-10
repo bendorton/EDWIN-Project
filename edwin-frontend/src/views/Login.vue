@@ -67,6 +67,7 @@ export default{
             invalidAuth: false,
             welcome: false,
             e1: false,
+            test: '',
             password: '',
             passwordRules: [
               (v) => !!v || 'Password is required',
