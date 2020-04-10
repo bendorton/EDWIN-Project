@@ -178,44 +178,6 @@ export default {
       users: [],
       camErrors: [],
       userErrors: [],
-      groups: [
-        {
-          id: 0,
-          firstName: "Trevor",
-          lastName: "Allen",
-          email: "trevor@woodlandhills.com",
-          groups: [
-            {
-              id: 0,
-              name: "Woodland Hills"
-            }
-          ]
-        },
-        {
-          id: 1,
-          firstName: "Miranda",
-          lastName: "Taylor",
-          email: "miranda@woodlandhills.com",
-          groups: [
-            {
-              id: 0,
-              name: "Woodland Hills"
-            }
-          ]
-        },
-        {
-          id: 2,
-          firstName: "Kyle",
-          lastName: "Neal",
-          email: "kyle@woodlandhills.com",
-          groups: [
-            {
-              id: 0,
-              name: "Woodland Hills"
-            }
-          ]
-        }
-      ],
       sampleUser: [
         {
           id: 1234
@@ -309,8 +271,7 @@ export default {
       }
     },
     createNewUser: function(){
-      if(this.newUser.firstName == null || this.newUser.lastName == null || this.newUser.email == null
-        || this.newUser.groups == null){
+      if(this.newUser.firstName == null || this.newUser.lastName == null || this.newUser.email == null){
           console.log("ERROR")
           return;
         }
@@ -323,7 +284,7 @@ export default {
         "lastName": newUser.lastName,
         "groups": newUser.groups,
         "email": newUser.email,
-        "password": ''
+        "password": 'password'
       })
       .then(function (response) {
         console.log(response);
