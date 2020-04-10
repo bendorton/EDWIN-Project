@@ -272,9 +272,9 @@ export default {
     },
     createNewUser: function(){
       if(this.newUser.firstName == null || this.newUser.lastName == null || this.newUser.email == null){
-          console.log("ERROR")
-          return;
-        }
+        console.log("ERROR", this.newUser.firstName, this.newUser.lastName, this.newUser.email)
+        return;
+      }
 
       let newUser = this.newUser
       newUser.groups = []
