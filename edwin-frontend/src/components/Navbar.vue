@@ -39,7 +39,7 @@ export default {
             links: [
                 { icon: 'videocam', text: 'Dashboard', route: '/' },
                 // { icon: 'account_circle', text: 'My Profile', route: '/profile' },
-                { icon: 'supervisor_account', text: 'Group', route: '/team' },
+                { icon: 'supervisor_account', text: 'Group Admin', route: '/team' },
                 // { icon: 'input', text: 'Login', route: '/' },
             ]
         }
