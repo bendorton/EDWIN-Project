@@ -66,7 +66,7 @@
       top
       :timeout="3000"
     >
-      Alert with ID of {{dismissedAlertId}} has been dismissed
+      The alert has been dismissed
       <v-btn
         color="red"
         text
