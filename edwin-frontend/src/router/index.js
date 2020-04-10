@@ -21,7 +21,7 @@ const routes = [
     component: Profile
   },
   {
-    meta: {title: 'Admin Groups'},
+    meta: {title: 'Admin'},
     path: '/team',
     name: 'team',
     component: Team

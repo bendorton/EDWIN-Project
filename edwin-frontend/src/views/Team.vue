@@ -1,6 +1,6 @@
 <template>
   <div class="team">
-    <h1 large class="display-3 text-center pa-8" center>Group</h1>
+    <h1 large class="display-3 text-center pa-8" center>Group and User Managemet</h1>
     <v-layout justify-center>
       <!-- <v-row> -->
         <v-dialog v-model="dialog" persistent max-width="600px">
