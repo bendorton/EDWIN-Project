@@ -34,6 +34,7 @@
               <v-list-item three-line v-if="camera.streams.length > 0" >
                 <v-list-item-content>
                   <v-list-item-title class="headline mb-1">Streams</v-list-item-title>
+                    <iframe width="560" height="315" src="https://rtsp.me/embed/HySsFh8T/"/>
                     <videoPlayer
                       :options="camera.streams[0].fullStream">
                     </videoPlayer>

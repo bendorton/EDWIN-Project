@@ -23,9 +23,9 @@
                   <v-col cols="12" sm="6" md="6">
                     <v-text-field label="Email*" id="email" v-model="newUser.email" required></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="6">
+                  <!-- <v-col cols="12" sm="6" md="6">
                     <v-text-field label="Password*" id="password" v-model="newUser.password" type="password" required></v-text-field>
-                  </v-col>
+                  </v-col> -->
                   <v-col cols="12" sm="6" md="6" v-if="selectableGroups">
                     <span class="headline">Groups*</span>
                     <v-subheader v-for="group in selectableGroups" :key="group.id" @click.capture.stop="toggleGroup(group)">
@@ -85,11 +85,11 @@
                 >
                   Save
                 </v-btn>
-                <v-btn class="mr-4" color="amber darken-2" small dark
+                <!-- <v-btn class="mr-4" color="amber darken-2" small dark
                   @click="resetPassword(user.id), resetPass = true, resetPassUser = user.firstName + ' ' + user.lastName"
                 >
                   Reset Password
-                </v-btn>
+                </v-btn> -->
                 <v-btn class="mr-4" color="red" small dark @click.stop="deleteDialog = true"
                 >
                   Delete User
@@ -310,7 +310,7 @@ export default {
     },
     createNewUser: function(){
       if(this.newUser.firstName == null || this.newUser.lastName == null || this.newUser.email == null
-        || this.newUser.groups == null || this.newUser.password == null){
+        || this.newUser.groups == null){
           console.log("ERROR")
           return;
         }
@@ -323,7 +323,7 @@ export default {
         "lastName": newUser.lastName,
         "groups": newUser.groups,
         "email": newUser.email,
-        "password": newUser.password
+        "password": ''
       })
       .then(function (response) {
         console.log(response);
