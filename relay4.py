@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Unpack a MIME message into a directory of files."""
+"""Forward incoming email to a list of subscribers, create alert, update camera status"""
 
 import os
 import email
@@ -18,8 +18,8 @@ from datetime import datetime
 
 def main():
 
-#   GET EMAIL MESSAGE AS STDIN 
- 
+#   GET EMAIL MESSAGE AS STDIN
+
     inmsg = ""
     for line in sys.stdin:
         inmsg += line
@@ -29,7 +29,7 @@ def main():
     if camip.find('<') > 1:
         camip = camip.split('<')[1]
     camdot = camip.replace('-', '.')
-   
+
 
 #   VERIFY SENDER IP ADDRESS
 
@@ -47,6 +47,7 @@ def main():
     try:
         camdata = getcam.json()
         #print(camdata)
+	#camname = camdata['name']
         cameraId = str(camdata['id'])
        # print(cameraId)
         prevstatus = camdata['status']
@@ -54,13 +55,14 @@ def main():
     except:
         #print('"' + camdot + '"')
         sys.exit('invalid incoming email sender ip')
-    
+
 
 #   CREATE DIRECTORY FOR ATTACHMENTS
 
     directory =  "/home/edwin/emailscript/alert_history/" + datetime.now().strftime("%m-%d-%Y-%H:%M:%S-") + camip
     try:
         os.mkdir(directory)
+#        os.chown(directory, 1000, 1000)
     except FileExistsError:
         print('could not create directory for email attachments')
         pass
@@ -75,13 +77,14 @@ def main():
             continue
         # Applications should really sanitize the given filename so that an
         # email message can't be used to overwrite important files
-        filename = part.get_filename()
-        if not filename:
-            ext = mimetypes.guess_extension(part.get_content_type())
-            if not ext:
+        #filename = part.get_filename()
+        filename = 'image' + str(counter) + '.jpg'
+        #if not filename:
+        #    ext = mimetypes.guess_extension(part.get_content_type())
+        #    if not ext:
                 # Use a generic bag-of-bits extension
-                ext = '.bin'
-            filename = f'part-{counter:03d}{ext}'
+        #        ext = '.jpg'
+        #    filename = f'part-{counter:03d}{ext}'
         counter += 1
         with open(os.path.join(directory, filename), 'wb') as fp:
             fp.write(part.get_payload(decode=True))
@@ -90,41 +93,38 @@ def main():
 
 #   LOG CAMERA ALERT
 
-    snapshot = os.path.join(directory, os.listdir(directory)[1])
+    snapshot = os.path.join(directory, os.listdir(directory)[0])
     #print('path to snapshot: ' + snapshot)
     eheaders = {'accept': '*/*', 'Content-Type': 'application/json'}
     alertdata = '{"alertType":"High Temperature","cameraId":"'+ cameraId + '","filePath":"' + snapshot + '","message":"High Temperature alert detected","status":"active"}'
     postalert = requests.post('http://127.0.0.1:3030/alert', headers = eheaders, data=alertdata)
 
 #   UPDATE CAMERA STATUS
-
     putdata = '{"id":' + cameraId + ',"status":"alert"}'
-    putcam = requests.put('http://127.0.0.1:3030/camera', headers=eheaders, data=putdata)
-
+    putcam = requests.put('http://127.0.0.1:3030/camera',headers=eheaders, data=putdata)
 
 #   COMPOSE MESSAGE TO GO OUT
 
     emsg = EmailMessage()
     emsg['Subject'] = 'Thermal Camera Alert from ' + camdot
     emsg['From'] = 'edwin_relay@edwinproject.local'
-    content = "An alert was triggerted on thermal camera " + camdot + ", Please see the attached images and the live feed at fire.edwinproject.org" 
-    content += "\ncamera ID: " + cameraId
+    content = "An alert was triggered on thermal camera " + cameraId + ", Please see the attached images and the live feed at fire.edwinproject.org" 
+    content += "\ncamera IP: " + camdot
     content += "\nprevious camera status: " + prevstatus
     emsg.set_content(content)
 
 
-#   GET 'SEND TO' LIST   
+#   GET 'SEND TO' LIST
 
     emaillist = requests.get('http://127.0.0.1:3030/alert/emails/' + cameraId) 
     emailstring = ''
     for mail in emaillist.json():
-        emailstring += mail + ', '        
+        emailstring += mail + ', '
     emsg['To'] = emailstring[:-2]
-    
 
 #   ADD ATTACHMENTS TO EMAIL
 
-    for fn in os.listdir(directory)[1:]:
+    for fn in os.listdir(directory):
         path = os.path.join(directory, fn)
         if not os.path.isfile(path):
             continue
@@ -133,8 +133,8 @@ def main():
             ctype = 'application/octet-stream'
         maintype, subtype = ctype.split('/', 1)
         with open(path, 'rb') as fp:
-                emsg.add_attachment(fp.read(), maintype=maintype, subtype=subtype, filename=filename)
-    
+            emsg.add_attachment(fp.read(), maintype=maintype, subtype=subtype, filename=filename)
+
 
 #   CONNECT TO SMTP SERVER AND SEND
 
