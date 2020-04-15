@@ -13,13 +13,21 @@ Further documentation can be found in the EDWIN project wiki.
 '''
 
 #libraries for establishing connection to mariadb and interfacing with web APIs
-import pymysql,json,requests
+import pymysql,json,requests,configparser
+
+config = configparser.ConfigParser()
+config.read('proxyconf.ini')
+
+serverIP = config['DEFAULT']['IP_ADDRESS']
+uname = config['DEFAULT']['USER']
+pwd = config['DEFAULT']['PASS']
+dbname = config['DEFAULT']['DB_NAME']
 
 
 def manageStreamTable():
 
     #open database connection
-    db = pymysql.connect("69.162.231.249","smokey","bear","edwin")
+    db = pymysql.connect(serverIP,uname,pwd,dbname)
 
     #prepare cursor objects using cursor() method
     cameraCursor = db.cursor()
@@ -63,6 +71,8 @@ def manageStreamTable():
             print("SQL Error")
 
     #if stream table id doesn't match an id in camera table, delete stream object
+    if streamResults == None:
+        print('empty')
     for streamID in streamResults:
         idExists = False
         for camID in cameraResults:
@@ -98,7 +108,7 @@ def removeDeadStreams():
         apiResults = None
 
     #open database connection
-    db = pymysql.connect("69.162.231.249","smokey","bear","edwin")
+    db = pymysql.connect(serverIP,uname,pwd,dbname)
 
     #prepare a cursor object using cursor() method
     cursor = db.cursor()
@@ -146,7 +156,7 @@ def addNewStreams():
     api_start_url = 'http://69.162.231.249:4040/start'
 
     #open database connection
-    db = pymysql.connect("69.162.231.249","smokey","bear","edwin")
+    db = pymysql.connect(serverIP,uname,pwd,dbname)
 
     #prepare a cursor object using cursor() method
     cursor = db.cursor()
@@ -182,7 +192,7 @@ def addNewStreams():
                 apiResults = json.loads(start_response.content.decode('utf-8'))
 
                 #update streams in stream table with new HLS URI and update format to hls
-                sql = "UPDATE stream SET url = '{}', proxy_id = '{}', output_format = 'hls' WHERE id = {}".format(apiResults['uri'], apiResults['id'], dbrow[0])
+                sql = "UPDATE stream SET url = '{}', proxy_id = '{}', output_format = 'hls' WHERE camera_id = {}".format(apiResults['uri'], apiResults['id'], dbrow[0])
 
                 try:
                     #execute SQL statement
