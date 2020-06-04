@@ -9,6 +9,7 @@ info:
 servers:
 - url: https://127.0.0.1:3030/
 tags:
+
 - description: Operations relating to general front end calls and user information
   name: general
 - description: Protected admin calls for creating, updating, deleting. Needs front
@@ -82,6 +83,7 @@ paths:
       x-swagger-router-controller: SiteAdmin
       x-openapi-router-controller: SiteAdminController
       x-openapi-router-service: SiteAdminService
+
   /user/admin/{userId}:
     get:
       operationId: userAdminUserIdGET
@@ -109,6 +111,35 @@ paths:
       x-swagger-router-controller: SiteAdmin
       x-openapi-router-controller: SiteAdminController
       x-openapi-router-service: SiteAdminService
+
+  /user/admin/email/{userEmail}:
+    get:
+      operationId: userAdminUserEmailGET
+      parameters:
+      - description: Email of user to return
+        explode: false
+        in: path
+        name: userEmail
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/person'
+          description: Successfully returned user
+        "400":
+          description: bad input parameter
+      summary: admin - get user
+      tags:
+      - siteAdmin
+      x-swagger-router-controller: SiteAdmin
+      x-openapi-router-controller: SiteAdminController
+      x-openapi-router-service: SiteAdminService
+
   /user/admin/list/{groupId}:
     get:
       operationId: userAdminListGroupIdGET

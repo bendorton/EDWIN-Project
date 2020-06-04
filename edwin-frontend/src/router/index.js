@@ -3,34 +3,39 @@ import VueRouter from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Profile from '../views/Profile.vue'
 import Team from '../views/Team.vue'
-import Login from '../views/Login.vue'
+import Home from '../views/Home.vue'
+import { authGuard } from "../auth"
 
 Vue.use(VueRouter)
 
 const routes = [
+  
+  {
+    meta: {title: 'Home'},
+    path: '/',
+    name: 'home',
+    component: Home
+  },
   {
     meta: {title: 'Dashboard'},
-    path: '/',
+    path: '/Dashboard',
     name: 'dashboard',
-    component: Dashboard
+    component: Dashboard,
+    beforeEnter: authGuard
   },
   {
     meta: {title: 'Profile'},
     path: '/profile',
     name: 'profile',
-    component: Profile
+    component: Profile,
+    beforeEnter: authGuard
   },
   {
     meta: {title: 'Admin'},
     path: '/team',
     name: 'team',
-    component: Team
-  },
-  {
-    meta: {title: 'Login'},
-    path: '/login',
-    name: 'login',
-    component: Login
+    component: Team,
+    beforeEnter: authGuard
   }
 ]
 

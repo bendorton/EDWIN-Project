@@ -25,6 +25,10 @@ class SiteAdminController {
     await Controller.handleRequest(request, response, this.service.userAdminUserIdGET);
   }
 
+  async userAdminUserEmailGET(request, response) {
+    await Controller.handleRequest(request, response, this.service.userAdminUserEmailGET);
+  }
+
 }
 
 module.exports = SiteAdminController;

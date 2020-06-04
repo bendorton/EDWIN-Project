@@ -131,8 +131,8 @@ class SiteAdminService {
           }
 
           if (person.password === '' || person.password == null || person.password == undefined) {
-            // resolve(Service.rejectResponse('password required', 401))
-            person.password = '' //TODO remove this for login
+             resolve(Service.rejectResponse('password required', 401))
+            //person.password = '' //TODO remove this for login
           }
 
           if (person.email === '' || person.email == null || person.email == undefined) {
@@ -348,6 +348,7 @@ class SiteAdminService {
                   email: user.email,
                   firstName: user.firstname,
                   lastName: user.lastname,
+                  password: user.password,
                   groups: [""]
                 }
                 userObj.groups = groups[0];
@@ -370,6 +371,61 @@ class SiteAdminService {
     );
   }
 
+
+  /**
+   * admin - get user
+   *
+   * email user to return
+   * returns person
+   **/
+  static userAdminUserEmailGET({userEmail}) {
+    return new Promise(
+      async (resolve) => {
+        try {
+          if (!isSiteAdmin) {
+            resolve(Service.rejectResponse('Unauthorized', 401))
+          }
+          const groups = await conn.query(
+            'SELECT g.id, g.name, pg.notification FROM groups g JOIN person_group pg ON g.id = pg.group_id AND pg.person_id = (SELECT id FROM person WHERE person.email= :userEmail)',
+            {
+              replacements: { userEmail: userEmail },
+              type: QueryTypes.SELECT
+            })
+
+          Person.findOne({
+            where: {
+              email: userEmail,
+            },
+          })
+            .then(user => {
+              if (user != null) {
+                var userObj = {
+                  id: user.id,
+                  email: user.email,
+                  firstName: user.firstname,
+                  lastName: user.lastname,
+                  password: user.password,
+                  groups: [""]
+                }
+                userObj.groups = groups[0];
+
+                resolve(Service.successResponse(JSON.stringify(userObj)))
+              } else {
+                resolve(Service.successResponse('Invalid ID: No user found'))
+              }
+            })
+            .catch(err => {
+              resolve(Service.successResponse('problem communicating with db: ' + err))
+            });
+        } catch (e) {
+          resolve(Service.rejectResponse(
+            e.message || 'Invalid input',
+            e.status || 405,
+          ));
+        }
+      },
+    );
+  }
 }
 
 module.exports = SiteAdminService;

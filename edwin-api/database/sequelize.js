@@ -6,10 +6,16 @@ var GroupNotifyModel = require('../models/GroupNotifyModel')
 var PersonModel = require('../models/PersonModel');
 var StreamModel = require('../models/StreamModel');
 
-let username = process.env.MARIADB_USER
-let password = process.env.MARIADB_PASSWORD
-let dbName = process.env.MARIADB_DATABASE
-let host = process.env.MARIADB_HOST
+//let username = process.env.MARIADB_USER
+//let password = process.env.MARIADB_PASSWORD
+//let dbName = process.env.MARIADB_DATABASE
+//let host = process.env.MARIADB_HOST
+
+let username = 'smokey'
+let password = 'bear'
+let dbName = 'edwin'
+let host = '69.162.231.249'
+
 
 const conn = new Sequelize(dbName, username, password, {
     host: host,
